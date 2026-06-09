@@ -4,7 +4,6 @@ frontend:
     preBuild:
       commands:
         - npm install -g pnpm
-        - pnpm config set enable-pre-post-scripts true
         - pnpm install
     build:
       commands:

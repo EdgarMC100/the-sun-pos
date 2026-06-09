@@ -365,6 +365,122 @@ When adding a new feature, follow this process:
 
 ---
 
+## 🚨 Common Pitfalls & Anti-Patterns
+
+This section documents recurring mistakes and anti-patterns to avoid during development.
+
+### Next.js 16 App Router
+
+**Wrong Router Import:**
+- ❌ `import { useRouter } from 'next/router'` (Pages Router - deprecated)
+- ✅ `import { useRouter } from 'next/navigation'` (App Router - correct)
+
+**Old Data Fetching Patterns:**
+- ❌ `getServerSideProps`, `getStaticProps` (Pages Router only)
+- ✅ Async Server Components with `fetch()`
+
+**Client Component Overuse:**
+- ❌ Adding `'use client'` to every component
+- ✅ Server Components by default, Client only when needed (hooks, events, browser APIs)
+
+---
+
+### CSS Modules
+
+**Traditional BEM Syntax:**
+- ❌ `.block__element--modifier` (redundant with CSS Modules)
+- ✅ `.block`, `.element`, `.elementModifier` (camelCase)
+
+**Viewport Units:**
+- ❌ `height: 100vh` (breaks on mobile with dynamic UI)
+- ✅ `height: 100dvh` (dynamic viewport height)
+
+**Inline Styles:**
+- ❌ `<div style={{ color: 'red' }}>`
+- ✅ Use CSS Modules with CSS variables
+
+**Hardcoded Values:**
+- ❌ `color: #3b82f6`
+- ✅ `color: var(--color-primary)`
+
+---
+
+### TypeScript
+
+**Implicit Any:**
+- ❌ `function handleData(data) { }`
+- ✅ `function handleData(data: DataItem[]) { }`
+
+**Type Assertions Without Checks:**
+- ❌ `const value = (data as User).name`
+- ✅ Use type guards: `if (isUser(data)) { const value = data.name }`
+
+**Using Any:**
+- ❌ `const items: any[] = []`
+- ✅ `const items: Item[] = []`
+
+---
+
+### Component Architecture
+
+**Server vs Client Components:**
+```tsx
+// ❌ WRONG - Unnecessary 'use client'
+'use client';
+
+export default function StaticContent() {
+  return <div>Static content</div>;
+}
+
+// ✅ CORRECT - Server Component (no directive needed)
+export default function StaticContent() {
+  return <div>Static content</div>;
+}
+
+// ✅ CORRECT - Client Component (needs interactivity)
+'use client';
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+```
+
+**Image Optimization:**
+- ❌ `<img src="/photo.jpg" />`
+- ✅ `<Image src="/photo.jpg" alt="Description" width={800} height={600} />`
+
+---
+
+### File Naming
+
+**Inconsistent Casing:**
+- ❌ `buttonComponent.tsx`, `user-card.tsx`
+- ✅ `Button.tsx`, `UserCard.tsx` (PascalCase for components)
+
+**CSS Module Naming:**
+- ❌ `button.css`, `Button.css`
+- ✅ `Button.module.css` (matches component name)
+
+---
+
+### Quick Reference
+
+**When to use `'use client'`:**
+- ✅ Event handlers (onClick, onChange)
+- ✅ React hooks (useState, useEffect, useContext)
+- ✅ Browser APIs (localStorage, window)
+- ✅ Third-party libraries requiring client-side
+
+**When NOT to use `'use client'`:**
+- ✅ Static content rendering
+- ✅ Server-side data fetching
+- ✅ SEO-critical pages
+- ✅ Database queries
+
+---
+
 ## 📚 Additional Resources
 
 - [Next.js 16 Documentation](https://nextjs.org/docs)
