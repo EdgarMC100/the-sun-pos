@@ -1,27 +1,27 @@
 import Image from "next/image";
 import styles from "./home.module.css";
 import Marquee from "react-fast-marquee";
-import { pacifico } from "./fonts";
+import BrandTitle from "@/components/BrandTitle";
 
 
 const footerLabel = "Under construction. Coming soon.";
 export default function Home() {
   return (
-    <div className={styles.home__container}>
-      <div className={styles.home__header}>
-        <h1 className={`${styles.home__title} ${pacifico.className}`}>Papeleria el</h1>
-        <Image className={styles.home__logo} src="/elsollogo.png" alt="Next.js logo" width={350} height={350} />
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <BrandTitle>Papeleria el</BrandTitle>
+        <Image className={styles.logo} src="/elsollogo.png" alt="Next.js logo" width={350} height={350} />
       </div>
-      <div className={styles.home__content}>
-        <Image className={`${styles['home__image-in-dev']}`} src="/under_construction.webp" alt="Next.js logo" width={500} height={500} />      
+      <div className={styles.content}>
+        <Image className={styles.imageInDev} src="/under_construction.webp" alt="Next.js logo" width={500} height={500} />
       </div>
-      <div className={styles.home__footer}>
+      <div className={styles.footer}>
          <Marquee>
             {
               Array(20).fill(footerLabel).map((label, index) => {
-                if(index % 2 === 0) return <span>&emsp;&emsp;&emsp;</span>
+                if(index % 2 === 0) return <span key={index}>&emsp;&emsp;&emsp;</span>
                 return (
-                  <span key={index} className={styles['home__footer-text']}>{label}</span>
+                  <span key={index} className={styles.footerText}>{label}</span>
                 )
             })
             }

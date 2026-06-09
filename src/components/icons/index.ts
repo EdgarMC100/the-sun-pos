@@ -1,0 +1,12 @@
+export { default as MailIcon } from './MailIcon';
+export { default as LockIcon } from './LockIcon';
+export { default as EyeIcon } from './EyeIcon';
+export { default as EyeOffIcon } from './EyeOffIcon';
+export { default as CheckIcon } from './CheckIcon';
+export { default as GlobeIcon } from './GlobeIcon';
+export { default as UserIcon } from './UserIcon';
+export { default as PhoneIcon } from './PhoneIcon';
+export { default as StoreIcon } from './StoreIcon';
+export { default as TagIcon } from './TagIcon';
+export { default as ChevronDownIcon } from './ChevronDownIcon';
+export type { IconProps } from './types';
