@@ -1,36 +1,194 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Sun Pos
 
-## Getting Started
+A modern web application built with Next.js 16, featuring AI-assisted development with a comprehensive agent suite.
 
-First, run the development server:
+## 🛠 Tech Stack
+
+- **Framework:** Next.js 16.2.5 (App Router)
+- **React:** 19.2.4
+- **TypeScript:** 5.x (strict mode)
+- **Styling:** CSS Modules (simplified BEM approach)
+- **Package Manager:** pnpm
+- **Deployment:** AWS Amplify
+- **Node Version:** 20.x
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20.x or higher
+- pnpm (install globally: `npm install -g pnpm`)
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Run development server
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## Learn More
+### Build
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Production build
+pnpm build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Start production server
+pnpm start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Run linter
+pnpm lint
+```
 
-## Deploy on Vercel
+## 🤖 AI-Assisted Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project uses a comprehensive AI agent suite to ensure consistent code quality and architectural patterns.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Available Agents (9 total)
+
+**Frontend Agents:**
+- **Component Builder** - Creates React components with TypeScript and CSS Modules
+- **Styling & Responsive** - Implements responsive design with mobile-first approach
+- **UI/UX Enhancement** - Adds animations, optimizations, and accessibility
+
+**Backend Agents:**
+- **API Route** - Creates Next.js API routes with validation and error handling
+- **Data Layer** - Manages server-side data fetching and Server Actions
+- **Integration** - Handles AWS Amplify and third-party integrations
+
+**Quality Assurance Agents:**
+- **Testing** - Creates comprehensive test suites
+- **Code Quality** - Enforces TypeScript, ESLint, and performance standards
+- **Code Reviewer** - Reviews code against project standards before commits
+
+### Using Agents
+
+```bash
+# Example: Create a new component
+As Component Builder Agent, create a ProductCard component with
+image, title, price, and proper TypeScript interfaces.
+
+# Example: Review before commit
+As Code Reviewer Agent, review my recent changes against
+project standards.
+```
+
+📚 **Full Agent Documentation:** [.claude/agents/README.md](.claude/agents/README.md)
+
+## 📁 Project Structure
+
+```
+the-sun-pos/
+├── src/
+│   └── app/              # Next.js App Router pages
+│       ├── layout.tsx    # Root layout
+│       ├── page.tsx      # Home page
+│       └── fonts.ts      # Font configuration
+├── public/               # Static assets
+├── .claude/              # AI agent suite
+│   ├── agents/          # Agent specifications
+│   └── commands/        # Custom skills
+├── CLAUDE.md            # Project context and standards
+├── AGENTS.md            # Next.js 16 specific rules
+└── amplify.yml          # AWS Amplify configuration
+```
+
+## 📖 Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** - Comprehensive project context, standards, and conventions
+- **[AGENTS.md](./AGENTS.md)** - Next.js 16 specific guidelines
+- **[AI Agents Guide](./.claude/agents/README.md)** - How to use AI agents for development
+
+## 🎯 Development Workflow
+
+### Standard Workflow with Agents
+
+1. **Build** - Use Component Builder or API Route agents
+2. **Style** - Apply Styling & Responsive agent
+3. **Enhance** - Add UI/UX improvements
+4. **Test** - Create tests with Testing agent
+5. **Review** - Run Code Reviewer agent
+6. **Commit** - Commit with confidence
+
+### Quality Gates
+
+All code must pass:
+- ✅ `pnpm lint` - No ESLint errors
+- ✅ `tsc --noEmit` - No TypeScript errors
+- ✅ `pnpm build` - Build succeeds
+- ✅ Code Reviewer approval
+
+## 🎨 Code Standards
+
+### TypeScript
+- Strict mode enabled
+- Explicit types for all functions and components
+- Interfaces for objects, types for unions
+
+### React Components
+- Server Components by default
+- Client Components only when needed (`'use client'`)
+- PascalCase naming
+- One component per file
+
+### Styling (CSS Modules)
+- Co-located `.module.css` files
+- camelCase class names (not BEM)
+- CSS variables for design tokens
+- Mobile-first responsive design
+- Use `dvh` instead of `vh` for viewport height
+
+### File Naming
+- Components: PascalCase (`Button.tsx`)
+- CSS Modules: Match component (`Button.module.css`)
+- Utilities: camelCase (`formatDate.ts`)
+
+## 🚨 Critical Don'ts
+
+❌ Do NOT use:
+- Pages Router patterns (use App Router)
+- `next/router` (use `next/navigation`)
+- Traditional BEM with CSS Modules
+- `vh` units (use `dvh`)
+- Tailwind or utility CSS (use CSS Modules)
+- `getServerSideProps` or `getStaticProps`
+
+## 🚀 Deployment
+
+Deployed automatically via **AWS Amplify** on push to `main` branch.
+
+### Environment Variables
+
+Configure in AWS Amplify Console:
+- Production: `main` branch
+- Preview: Pull request branches
+
+See `.env.example` for required variables (create this file as needed).
+
+## 📝 Contributing
+
+1. Create a feature branch
+2. Use AI agents for development
+3. Run quality gates (`lint`, `build`, `type-check`)
+4. Get Code Reviewer approval
+5. Submit pull request
+
+## 🔗 Resources
+
+- [Next.js 16 Documentation](https://nextjs.org/docs)
+- [React 19 Documentation](https://react.dev)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs)
+- [CSS Modules](https://github.com/css-modules/css-modules)
+- [AWS Amplify](https://docs.amplify.aws/)
+
+---
+
+**Built with ❤️ using AI-assisted development**
