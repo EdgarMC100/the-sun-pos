@@ -1,0 +1,262 @@
+'use client';
+
+import { signIn, signUp, signOut, confirmSignUp, getCurrentUser, fetchAuthSession, type SignUpInput } from 'aws-amplify/auth';
+
+/**
+ * Auth Helper Functions
+ *
+ * Provides username-based authentication helpers that wrap Amplify Auth APIs.
+ *
+ * Key Features:
+ * - Username resolution for login
+ * - Admin registration with email verification
+ * - Role-based user data extraction
+ * - Custom claims parsing (role, storeId)
+ */
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface UserRole {
+  userId: string;
+  username: string;
+  email: string;
+  role: 'admin' | 'cashier';
+  storeId: string;
+}
+
+export interface AdminRegistrationInput {
+  fullName: string;
+  username: string;
+  email: string;
+  password: string;
+  storeName: string;
+  storeType: string;
+}
+
+// ============================================================================
+// Username Resolution
+// ============================================================================
+
+/**
+ * Resolve username to email for Cognito sign-in
+ *
+ * Calls the username resolution API endpoint which queries UserProfile table.
+ *
+ * @param username - The username to resolve
+ * @returns The internal email address for Cognito
+ * @throws Error if username not found
+ */
+export async function resolveUsername(username: string): Promise<string> {
+  const response = await fetch('/api/auth/resolve-username', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to resolve username');
+  }
+
+  const data = await response.json();
+  return data.email;
+}
+
+// ============================================================================
+// Authentication
+// ============================================================================
+
+/**
+ * Sign in with username and password
+ *
+ * Resolves username to email before calling Cognito signIn.
+ *
+ * @param username - User's username (not email)
+ * @param password - User's password
+ * @returns Sign-in result from Cognito
+ */
+export async function signInWithUsername(username: string, password: string) {
+  try {
+    // Resolve username to email
+    const email = await resolveUsername(username);
+
+    // Sign in with email (Cognito requirement)
+    const result = await signIn({
+      username: email,
+      password,
+    });
+
+    return result;
+  } catch (error: any) {
+    console.error('Sign-in error:', error);
+    throw new Error(error.message || 'Failed to sign in');
+  }
+}
+
+/**
+ * Register a new admin user
+ *
+ * Creates admin account with email verification.
+ * Generates storeId and sets custom attributes.
+ *
+ * @param input - Admin registration data
+ * @returns Sign-up result from Cognito
+ */
+export async function registerAdmin(input: AdminRegistrationInput) {
+  try {
+    // Generate unique storeId
+    const storeId = crypto.randomUUID();
+
+    // Prepare sign-up parameters
+    const signUpParams: SignUpInput = {
+      username: input.email, // Cognito uses email as username for admins
+      password: input.password,
+      options: {
+        userAttributes: {
+          email: input.email,
+          preferred_username: input.username,
+          'custom:role': 'admin',
+          'custom:storeId': storeId,
+          'custom:storeName': input.storeName,
+          'custom:storeType': input.storeType,
+        },
+        autoSignIn: false, // Require email verification first
+      },
+    };
+
+    const result = await signUp(signUpParams);
+
+    return {
+      ...result,
+      storeId, // Return storeId for client-side use
+    };
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    throw new Error(error.message || 'Failed to register');
+  }
+}
+
+/**
+ * Confirm email verification code
+ *
+ * @param email - User's email address
+ * @param code - Verification code from email
+ */
+export async function confirmEmail(email: string, code: string) {
+  try {
+    const result = await confirmSignUp({
+      username: email,
+      confirmationCode: code,
+    });
+
+    return result;
+  } catch (error: any) {
+    console.error('Email confirmation error:', error);
+    throw new Error(error.message || 'Failed to confirm email');
+  }
+}
+
+/**
+ * Sign out current user
+ */
+export async function signOutUser() {
+  try {
+    await signOut();
+  } catch (error: any) {
+    console.error('Sign-out error:', error);
+    throw new Error(error.message || 'Failed to sign out');
+  }
+}
+
+// ============================================================================
+// User Data
+// ============================================================================
+
+/**
+ * Get current authenticated user with role data
+ *
+ * Extracts custom claims from ID token:
+ * - role (admin | cashier)
+ * - storeId (UUID)
+ * - username (preferred_username)
+ *
+ * @returns User data with role information or null if not authenticated
+ */
+export async function getCurrentUserData(): Promise<UserRole | null> {
+  try {
+    const [user, session] = await Promise.all([
+      getCurrentUser(),
+      fetchAuthSession(),
+    ]);
+
+    if (!session.tokens?.idToken) {
+      return null;
+    }
+
+    const idToken = session.tokens.idToken;
+    const payload = idToken.payload;
+
+    return {
+      userId: user.userId,
+      username: (payload.username as string) || (payload.preferred_username as string) || '',
+      email: (payload.email as string) || '',
+      role: (payload.role as 'admin' | 'cashier') || 'cashier',
+      storeId: (payload.storeId as string) || '',
+    };
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    return null;
+  }
+}
+
+/**
+ * Check if current user is admin
+ */
+export async function isAdmin(): Promise<boolean> {
+  const userData = await getCurrentUserData();
+  return userData?.role === 'admin';
+}
+
+/**
+ * Check if current user is cashier
+ */
+export async function isCashier(): Promise<boolean> {
+  const userData = await getCurrentUserData();
+  return userData?.role === 'cashier';
+}
+
+// ============================================================================
+// Admin Functions
+// ============================================================================
+
+/**
+ * Create a new cashier account (Admin only)
+ *
+ * Calls Lambda function to create cashier with username-only credentials.
+ *
+ * @param username - Cashier's username
+ * @param password - Cashier's password
+ * @returns Success result with username
+ */
+export async function createCashier(username: string, password: string) {
+  try {
+    const response = await fetch('/api/admin/create-cashier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create cashier');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error('Create cashier error:', error);
+    throw new Error(error.message || 'Failed to create cashier');
+  }
+}

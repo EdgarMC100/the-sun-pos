@@ -9,7 +9,8 @@ Comprehensive AI agent specifications for assisted development on The Sun Pos pr
 | Category | Agents | File |
 |----------|--------|------|
 | **Frontend** | Component Builder, Styling & Responsive, UI/UX Enhancement | [frontend-agents.md](./frontend-agents.md) |
-| **Backend** | API Route, Data Layer, Integration | [backend-agents.md](./backend-agents.md) |
+| **Backend** | API Route, Data Layer, Integration, Amplify Gen 2 | [backend-agents.md](./backend-agents.md) |
+| **Infrastructure** | Amplify Gen 2 Backend | [amplify-gen2-agent.md](./amplify-gen2-agent.md) |
 | **Quality Assurance** | Testing, Code Quality | [qa-agents.md](./qa-agents.md) |
 | **Code Review** | Code Reviewer | [code-reviewer-agent.md](./code-reviewer-agent.md) |
 

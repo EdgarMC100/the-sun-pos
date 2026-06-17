@@ -4,7 +4,18 @@ This file provides comprehensive context for AI-assisted development following *
 
 ## Project References
 
-@AGENTS.md
+**Product & Technical Documentation:**
+- @PRD.md - Product requirements, user personas, features
+- @AMPLIFY_GEN2_IMPLEMENTATION_PLAN.md - Backend implementation plan
+
+**Agent-Specific Instructions:**
+- `.claude/agents/` - Role-specific development guidelines
+  - `backend-agents.md` - Backend development rules
+  - `frontend-agents.md` - Frontend development rules
+  - `code-reviewer-agent.md` - Code review standards
+  - `qa-agents.md` - Testing & quality assurance
+
+Note: Agent files are automatically loaded by Claude Code based on the task context.
 
 ---
 
@@ -12,7 +23,7 @@ This file provides comprehensive context for AI-assisted development following *
 
 **Project Name:** The Sun Pos
 **Type:** Web Application
-**Purpose:** [Add your project description here]
+**Purpose:** Multi-tenant Point of Sale (POS) system with username-based authentication. Admins manage stores and cashiers; cashiers process transactions without requiring email addresses.
 **Deployment:** AWS Amplify
 
 ---
