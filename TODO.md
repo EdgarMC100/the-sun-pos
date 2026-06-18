@@ -1,6 +1,6 @@
 # Amplify Gen 2 Integration - Todo List
 
-**Last Updated:** June 16, 2026
+**Last Updated:** June 17, 2026
 **Phase:** Frontend Integration (Phase 5)
 
 ---
@@ -11,63 +11,48 @@
 2. ✅ Create username resolution API endpoint (`src/app/api/auth/resolve-username/route.ts`)
 3. ✅ Create AuthProvider context component (`src/components/auth/AuthProvider.tsx`)
 4. ✅ Create route protection middleware (`src/middleware.ts`)
+5. ✅ Update root layout to use AuthProvider (`src/app/layout.tsx`)
+6. ✅ Create cashier creation form component (`src/components/forms/CashierCreationForm.tsx` + CSS module)
+7. ✅ Create admin dashboard page (`src/app/dashboard/admin/page.tsx` + CSS module)
+8. ✅ Create comprehensive AuthProvider & Hub Events documentation (`docs/auth-provider-hub-events.md`)
 
 ---
 
 ## ⏳ Remaining Tasks
 
-### 5. Update root layout to use AuthProvider ← **START HERE**
-**File:** `src/app/layout.tsx`
+### 9. Create cashier creation page ← **START HERE TOMORROW**
+**File:** `src/app/dashboard/admin/users/create-cashier/page.tsx`
 
 **What to do:**
-- Import `AuthProvider` from `@/components/auth/AuthProvider`
-- Wrap `{children}` with `<AuthProvider>`
-- This enables `useAuth()` hook throughout the app
+- Import `CashierCreationForm` component
+- Add admin-only protection (check `isAdmin`)
+- Add navigation back to admin dashboard
+- Simple page layout with form
 
 **Example:**
 ```tsx
-import { AuthProvider } from '@/components/auth/AuthProvider';
+'use client';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { CashierCreationForm } from '@/components/forms/CashierCreationForm';
+import Link from 'next/link';
 
-export default function RootLayout({ children }) {
+export default function CreateCashierPage() {
+  const { isAdmin } = useAuth();
+
+  if (!isAdmin) return <div>Access Denied</div>;
+
   return (
-    <html lang="en">
-      <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </body>
-    </html>
+    <div>
+      <Link href="/dashboard/admin">← Back to Dashboard</Link>
+      <CashierCreationForm />
+    </div>
   );
 }
 ```
 
 ---
 
-### 6. Create cashier creation form component
-**File:** `src/components/forms/CashierCreationForm.tsx`
-
-**What to do:**
-- Create form with username and password fields
-- Call `createCashier()` from auth-helpers
-- Display generated credentials on success
-- Admin can print/copy credentials for cashier
-
----
-
-### 7. Create admin dashboard structure
-**Files:**
-- `src/app/dashboard/admin/page.tsx` - Main admin dashboard
-- `src/app/dashboard/admin/users/create-cashier/page.tsx` - Cashier creation page
-
-**What to do:**
-- Show admin-specific navigation
-- Display store info
-- Link to create cashier page
-- Show transaction summary (future)
-
----
-
-### 8. Create cashier dashboard structure
+### 10. Create cashier dashboard structure
 **File:** `src/app/dashboard/cashier/page.tsx`
 
 **What to do:**
@@ -78,7 +63,7 @@ export default function RootLayout({ children }) {
 
 ---
 
-### 9. Update login page for username-based auth
+### 11. Update login page for username-based auth
 **File:** `src/app/login/page.tsx`
 
 **What to do:**
@@ -89,7 +74,7 @@ export default function RootLayout({ children }) {
 
 ---
 
-### 10. Update register page to use registerAdmin helper
+### 12. Update register page to use registerAdmin helper
 **File:** `src/app/register/page.tsx`
 
 **What to do:**
@@ -103,9 +88,9 @@ export default function RootLayout({ children }) {
 
 ## 📊 Progress
 
-**Completed:** 4/10 tasks (40%)
-**Remaining:** 6/10 tasks (60%)
-**Estimated time:** 2-3 hours
+**Completed:** 8/12 tasks (67%)
+**Remaining:** 4/12 tasks (33%)
+**Estimated time:** 1-2 hours
 
 ---
 
@@ -113,13 +98,19 @@ export default function RootLayout({ children }) {
 
 Just say to Claude Code:
 ```
-Continue with the Amplify Gen 2 integration
+continue with the TODO.md
 ```
 
 Or:
 ```
-Start with todo item #5 - Update root layout
+Start with task #9 - Create cashier creation page
 ```
+
+**Next Steps:**
+1. Create cashier creation page (wraps the form component)
+2. Create cashier dashboard
+3. Update login page for username auth
+4. Update register page for admin registration
 
 ---
 
