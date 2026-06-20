@@ -2,76 +2,99 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
 import BrandTitle from '@/components/BrandTitle';
-import { isValidEmail, isValidPassword } from '@/lib/validation';
+import { isValidUsername, isValidPassword } from '@/lib/validation';
+import { signInWithUsername } from '@/lib/amplify/auth-helpers';
 import {
-  MailIcon,
+  UserIcon,
   LockIcon,
   EyeIcon,
   EyeOffIcon,
   CheckIcon,
-  GlobeIcon,
 } from '@/components/icons';
 
 interface FormErrors {
-  email?: string;
-  password?: string;
+  general?: string;
 }
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const router = useRouter();
+
+  // Form fields (password separate for security per guidelines)
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  // UI state
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Error state
   const [errors, setErrors] = useState<FormErrors>({});
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
+    if (!username) {
+      setErrors({ general: 'Username is required' });
+      return false;
+    }
 
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!isValidEmail(email)) {
-      newErrors.email = 'Please enter a valid email address';
+    if (!isValidUsername(username)) {
+      setErrors({ general: 'Username must be 3-20 characters (alphanumeric, dots, underscores)' });
+      return false;
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (!isValidPassword(password, 8)) {
-      newErrors.password = 'Password must be at least 8 characters';
+      setErrors({ general: 'Password is required' });
+      return false;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!isValidPassword(password, 8)) {
+      setErrors({ general: 'Password must be at least 8 characters' });
+      return false;
+    }
+
+    return true;
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrors({});
 
-    if (validateForm()) {
-      // TODO: Implement actual authentication logic
-      console.log('Form submitted:', {
-        email,
-        password,
-        rememberMe,
-      });
-      // Reset form or redirect after successful login
+    if (!validateForm()) {
+      return;
     }
-  };
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google sign-in clicked');
+    setLoading(true);
+
+    try {
+      const result = await signInWithUsername(username, password);
+
+      if (result.isSignedIn) {
+        // Success - redirect to dashboard (middleware handles role routing)
+        router.push('/dashboard');
+      } else if (result.nextStep.signInStep === 'CONFIRM_SIGN_UP') {
+        setErrors({ general: 'Please verify your email before signing in.' });
+      } else if (result.nextStep.signInStep === 'RESET_PASSWORD') {
+        setErrors({ general: 'Password reset required. Please contact support.' });
+      } else {
+        setErrors({ general: 'Sign-in incomplete. Please try again.' });
+      }
+    } catch (error: any) {
+      console.error('Sign-in error:', error);
+      setErrors({ general: error.message || 'Invalid username or password. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {
-    // TODO: Implement forgot password flow
-    console.log('Forgot password clicked');
+    alert('Password reset is not yet implemented. Please contact your administrator.');
   };
 
   const handleSignUp = () => {
-    // TODO: Navigate to sign-up page
-    console.log('Sign up clicked');
+    router.push('/register');
   };
 
   return (
@@ -100,36 +123,38 @@ export default function LoginPage() {
                 <p className={styles.subtitle}>Please enter your details to sign in.</p>
               </div>
 
+              {/* General Error Message */}
+              {errors.general && (
+                <div className={styles.generalError} role="alert">
+                  {errors.general}
+                </div>
+              )}
+
               {/* Form Fields */}
               <div className={styles.fields}>
-                {/* Email Field */}
+                {/* Username Field */}
                 <div className={styles.field}>
-                  <label htmlFor="email" className={styles.label}>
-                    Email
+                  <label htmlFor="username" className={styles.label}>
+                    Username
                   </label>
                   <div className={styles.inputWrapper}>
-                    <MailIcon className={styles.inputIcon} />
+                    <UserIcon className={styles.inputIcon} />
                     <input
-                      id="email"
-                      type="email"
+                      id="username"
+                      type="text"
                       className={styles.input}
-                      placeholder="you@example.com"
-                      value={email}
+                      placeholder="your.username"
+                      value={username}
                       onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (errors.email) {
-                          setErrors({ ...errors, email: undefined });
+                        setUsername(e.target.value);
+                        if (errors.general) {
+                          setErrors({});
                         }
                       }}
-                      aria-invalid={!!errors.email}
-                      aria-describedby={errors.email ? 'email-error' : undefined}
+                      disabled={loading}
+                      autoComplete="username"
                     />
                   </div>
-                  {errors.email && (
-                    <span id="email-error" className={styles.error} role="alert">
-                      {errors.email}
-                    </span>
-                  )}
                 </div>
 
                 {/* Password Field */}
@@ -142,6 +167,7 @@ export default function LoginPage() {
                       type="button"
                       className={styles.forgotLink}
                       onClick={handleForgotPassword}
+                      disabled={loading}
                     >
                       Forgot password?
                     </button>
@@ -156,27 +182,23 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
-                        if (errors.password) {
-                          setErrors({ ...errors, password: undefined });
+                        if (errors.general) {
+                          setErrors({});
                         }
                       }}
-                      aria-invalid={!!errors.password}
-                      aria-describedby={errors.password ? 'password-error' : undefined}
+                      disabled={loading}
+                      autoComplete="current-password"
                     />
                     <button
                       type="button"
                       className={styles.passwordToggle}
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                     </button>
                   </div>
-                  {errors.password && (
-                    <span id="password-error" className={styles.error} role="alert">
-                      {errors.password}
-                    </span>
-                  )}
                 </div>
 
                 {/* Remember Me Checkbox */}
@@ -206,25 +228,8 @@ export default function LoginPage() {
               </div>
 
               {/* Sign In Button */}
-              <button type="submit" className={styles.button}>
-                Sign in
-              </button>
-
-              {/* Divider */}
-              <div className={styles.divider}>
-                <div className={styles.dividerLine}></div>
-                <span className={styles.dividerText}>OR</span>
-                <div className={styles.dividerLine}></div>
-              </div>
-
-              {/* Google Sign In Button */}
-              <button
-                type="button"
-                className={styles.googleButton}
-                onClick={handleGoogleSignIn}
-              >
-                <GlobeIcon className={styles.googleIcon} />
-                Continue with Google
+              <button type="submit" className={styles.button} disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign in'}
               </button>
 
               {/* Sign Up Link */}

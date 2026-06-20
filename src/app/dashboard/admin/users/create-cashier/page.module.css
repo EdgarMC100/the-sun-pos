@@ -1,0 +1,83 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+  color: var(--color-text, #1a1a1a);
+}
+
+.description {
+  color: var(--color-text-secondary, #666);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.backLink {
+  display: inline-block;
+  color: var(--color-primary, #007bff);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.backLink:hover {
+  color: var(--color-primary-dark, #0056b3);
+  text-decoration: underline;
+}
+
+.formContainer {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  font-size: 1.25rem;
+  color: var(--color-text-secondary, #666);
+}
+
+.accessDenied {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.accessDenied h1 {
+  font-size: 2rem;
+  color: var(--color-error, #dc3545);
+  margin-bottom: 1rem;
+}
+
+.accessDenied p {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .formContainer {
+    padding: 1.5rem;
+  }
+}
