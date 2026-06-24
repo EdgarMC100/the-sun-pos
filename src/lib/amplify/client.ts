@@ -1,7 +1,7 @@
 'use client';
 
 import { Amplify, ResourcesConfig } from 'aws-amplify';
-import outputs from '@/amplify_outputs.json';
+import outputs from '../../../amplify_outputs.json';
 
 /**
  * Client-side Amplify Configuration

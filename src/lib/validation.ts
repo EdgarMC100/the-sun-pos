@@ -39,6 +39,21 @@ export function isValidPhone(phone: string): boolean {
 }
 
 /**
+ * Username validation regex
+ * Validates alphanumeric characters, dots, and underscores only
+ */
+export const USERNAME_REGEX = /^[a-zA-Z0-9._]+$/;
+
+/**
+ * Validates if a string is a valid username
+ * @param username - The username string to validate
+ * @returns true if valid username format (3-20 chars, alphanumeric + dots/underscores), false otherwise
+ */
+export function isValidUsername(username: string): boolean {
+  return username.length >= 3 && username.length <= 20 && USERNAME_REGEX.test(username);
+}
+
+/**
  * Password strength levels
  */
 export type PasswordStrength = 0 | 1 | 2 | 3 | 4;

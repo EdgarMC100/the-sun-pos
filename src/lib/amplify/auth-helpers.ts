@@ -119,14 +119,24 @@ export async function registerAdmin(input: AdminRegistrationInput) {
           preferred_username: input.username,
           'custom:role': 'admin',
           'custom:storeId': storeId,
-          'custom:storeName': input.storeName,
-          'custom:storeType': input.storeType,
+          // Note: storeName and storeType are NOT stored in Cognito
+          // They will be passed to /api/admin/create-store on first login
         },
         autoSignIn: false, // Require email verification first
       },
     };
 
     const result = await signUp(signUpParams);
+
+    // Store registration data in localStorage for use on first login
+    // This is needed because Cognito doesn't store storeName/storeType
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pendingStoreData', JSON.stringify({
+        name: input.storeName,
+        type: input.storeType,
+        storeId,
+      }));
+    }
 
     return {
       ...result,
@@ -258,5 +268,97 @@ export async function createCashier(username: string, password: string) {
   } catch (error: any) {
     console.error('Create cashier error:', error);
     throw new Error(error.message || 'Failed to create cashier');
+  }
+}
+
+// ============================================================================
+// First Login Setup
+// ============================================================================
+
+/**
+ * Handle first login setup - creates UserProfile and Store if needed
+ *
+ * This function is called after successful authentication to ensure
+ * UserProfile and Store records exist. These were moved out of the
+ * postConfirmation trigger to avoid circular dependencies.
+ *
+ * @returns Success status
+ */
+export async function handleFirstLogin(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userData = await getCurrentUserData();
+
+    if (!userData) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    console.log('Handling first login for:', userData.username);
+
+    // 1. Create UserProfile
+    const userProfileResponse = await fetch('/api/user-profile/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!userProfileResponse.ok) {
+      const error = await userProfileResponse.json();
+      console.error('UserProfile creation failed:', error);
+      // Don't fail if UserProfile already exists
+      if (!error.details?.includes('already exists')) {
+        throw new Error(error.error || 'Failed to create user profile');
+      }
+    } else {
+      console.log('UserProfile created successfully');
+    }
+
+    // 2. If admin, create Store
+    if (userData.role === 'admin') {
+      // Get store data from localStorage (saved during registration)
+      let storeName = 'My Store';
+      let storeType = 'retail';
+
+      if (typeof window !== 'undefined') {
+        const pendingData = localStorage.getItem('pendingStoreData');
+        if (pendingData) {
+          try {
+            const data = JSON.parse(pendingData);
+            storeName = data.name || storeName;
+            storeType = data.type || storeType;
+            // Clear the data after reading
+            localStorage.removeItem('pendingStoreData');
+          } catch (e) {
+            console.warn('Failed to parse pendingStoreData:', e);
+          }
+        }
+      }
+
+      const storeResponse = await fetch('/api/admin/create-store', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: storeName,
+          type: storeType,
+        }),
+      });
+
+      if (!storeResponse.ok) {
+        const error = await storeResponse.json();
+        console.error('Store creation failed:', error);
+        // Don't fail if Store already exists
+        if (!error.details?.includes('already exists')) {
+          throw new Error(error.error || 'Failed to create store');
+        }
+      } else {
+        console.log('Store created successfully');
+      }
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('First login setup error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to complete first login setup'
+    };
   }
 }

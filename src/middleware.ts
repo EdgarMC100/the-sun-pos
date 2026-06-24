@@ -64,8 +64,8 @@ export async function middleware(request: NextRequest) {
       const payload = idToken.payload;
 
       // Verify required custom claims exist (ensures token is from our system)
-      const hasRole = payload['custom:role'] &&
-                     ['admin', 'cashier'].includes(payload['custom:role'] as string);
+      const hasRole = !!(payload['custom:role'] &&
+                     ['admin', 'cashier'].includes(payload['custom:role'] as string));
       const hasStoreId = !!payload['custom:storeId'];
 
       // Token is valid if:
