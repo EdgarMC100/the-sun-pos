@@ -506,6 +506,49 @@
   text-decoration: underline;
 }
 
+/* Success Message */
+.successMessage {
+  margin-bottom: 24px;
+  padding: 20px;
+  background-color: #F0FDF4;
+  border: 1px solid var(--register-success);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.successMessage h3 {
+  margin: 0 0 8px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--register-success);
+}
+
+.successMessage p {
+  margin: 0 0 16px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--register-text-secondary);
+  line-height: 1.5;
+}
+
+.successLink {
+  display: inline-block;
+  padding: 10px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--register-white);
+  background-color: var(--register-success);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.successLink:hover {
+  background-color: #16A34A;
+}
+
 /* Responsive Design - Mobile/Tablet */
 @media (max-width: 768px) {
   .split {

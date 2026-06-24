@@ -2,9 +2,12 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './register.module.css';
 import BrandTitle from '@/components/BrandTitle';
-import { isValidEmail, isValidPassword, getPasswordStrength, type PasswordStrength } from '@/lib/validation';
+import { isValidEmail, isValidPassword, isValidUsername, getPasswordStrength, type PasswordStrength } from '@/lib/validation';
+import { registerAdmin } from '@/lib/amplify/auth-helpers';
 import {
   MailIcon,
   LockIcon,
@@ -20,6 +23,7 @@ import {
 
 interface FormErrors {
   fullName?: string;
+  username?: string;
   storeName?: string;
   email?: string;
   storeType?: string;
@@ -29,10 +33,14 @@ interface FormErrors {
 }
 
 export default function RegisterPage() {
-  const [fullName, setFullName] = useState('');
-  const [storeName, setStoreName] = useState('');
-  const [email, setEmail] = useState('');
-  const [storeType, setStoreType] = useState('');
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    fullName: '',
+    username: '',
+    storeName: '',
+    email: '',
+    storeType: '',
+  });
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +48,8 @@ export default function RegisterPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
@@ -52,21 +62,27 @@ export default function RegisterPage() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!fullName.trim()) {
+    if (!formData.fullName.trim()) {
       newErrors.fullName = 'Full name is required';
     }
 
-    if (!storeName.trim()) {
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (!isValidUsername(formData.username)) {
+      newErrors.username = 'Username must be 3-20 characters (letters, numbers, dots, underscores only)';
+    }
+
+    if (!formData.storeName.trim()) {
       newErrors.storeName = 'Store name is required';
     }
 
-    if (!email.trim()) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!isValidEmail(email)) {
+    } else if (!isValidEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!storeType) {
+    if (!formData.storeType) {
       newErrors.storeType = 'Please select a store type';
     }
 
@@ -90,32 +106,36 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      // TODO: Implement actual registration logic
-      console.log('Registration form submitted:', {
-        fullName,
-        storeName,
-        email,
-        storeType,
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrors({});
+
+    try {
+      await registerAdmin({
+        fullName: formData.fullName,
+        username: formData.username,
+        email: formData.email,
         password,
-        agreeToTerms,
+        storeName: formData.storeName,
+        storeType: formData.storeType,
       });
-      // Reset form or redirect after successful registration
+
+      setRegistrationSuccess(true);
+    } catch (error: any) {
+      setErrors({
+        email: error.message || 'Registration failed. Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleGoogleSignUp = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google sign-up clicked');
-  };
-
-  const handleSignIn = () => {
-    // TODO: Navigate to sign-in page
-    console.log('Sign in clicked');
-  };
 
   const getStrengthBarClass = (index: number): string => {
     const baseClass = styles.strengthBar;
@@ -177,20 +197,52 @@ export default function RegisterPage() {
                       type="text"
                       className={styles.input}
                       placeholder="Jane Cooper"
-                      value={fullName}
+                      value={formData.fullName}
                       onChange={(e) => {
-                        setFullName(e.target.value);
+                        setFormData({ ...formData, fullName: e.target.value });
                         if (errors.fullName) {
                           setErrors({ ...errors, fullName: undefined });
                         }
                       }}
                       aria-invalid={!!errors.fullName}
                       aria-describedby={errors.fullName ? 'fullName-error' : undefined}
+                      disabled={isSubmitting}
                     />
                   </div>
                   {errors.fullName && (
                     <span id="fullName-error" className={styles.error} role="alert">
                       {errors.fullName}
+                    </span>
+                  )}
+                </div>
+
+                {/* Username Field */}
+                <div className={styles.field}>
+                  <label htmlFor="username" className={styles.label}>
+                    Username
+                  </label>
+                  <div className={styles.inputWrapper}>
+                    <UserIcon className={styles.inputIcon} />
+                    <input
+                      id="username"
+                      type="text"
+                      className={styles.input}
+                      placeholder="jane.cooper"
+                      value={formData.username}
+                      onChange={(e) => {
+                        setFormData({ ...formData, username: e.target.value });
+                        if (errors.username) {
+                          setErrors({ ...errors, username: undefined });
+                        }
+                      }}
+                      aria-invalid={!!errors.username}
+                      aria-describedby={errors.username ? 'username-error' : undefined}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {errors.username && (
+                    <span id="username-error" className={styles.error} role="alert">
+                      {errors.username}
                     </span>
                   )}
                 </div>
@@ -207,15 +259,16 @@ export default function RegisterPage() {
                       <select
                         id="storeType"
                         className={styles.typeSelect}
-                        value={storeType}
+                        value={formData.storeType}
                         onChange={(e) => {
-                          setStoreType(e.target.value);
+                          setFormData({ ...formData, storeType: e.target.value });
                           if (errors.storeType) {
                             setErrors({ ...errors, storeType: undefined });
                           }
                         }}
                         aria-invalid={!!errors.storeType}
                         aria-describedby={errors.storeType ? 'storeType-error' : undefined}
+                        disabled={isSubmitting}
                       >
                         <option value="">Type</option>
                         <option value="retail">Retail</option>
@@ -239,15 +292,16 @@ export default function RegisterPage() {
                         type="text"
                         className={styles.input}
                         placeholder="Sunny Coffee Co."
-                        value={storeName}
+                        value={formData.storeName}
                         onChange={(e) => {
-                          setStoreName(e.target.value);
+                          setFormData({ ...formData, storeName: e.target.value });
                           if (errors.storeName) {
                             setErrors({ ...errors, storeName: undefined });
                           }
                         }}
                         aria-invalid={!!errors.storeName}
                         aria-describedby={errors.storeName ? 'storeName-error' : undefined}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -270,15 +324,16 @@ export default function RegisterPage() {
                       type="email"
                       className={styles.input}
                       placeholder="you@yourstore.com"
-                      value={email}
+                      value={formData.email}
                       onChange={(e) => {
-                        setEmail(e.target.value);
+                        setFormData({ ...formData, email: e.target.value });
                         if (errors.email) {
                           setErrors({ ...errors, email: undefined });
                         }
                       }}
                       aria-invalid={!!errors.email}
                       aria-describedby={errors.email ? 'email-error' : undefined}
+                      disabled={isSubmitting}
                     />
                   </div>
                   {errors.email && (
@@ -304,6 +359,7 @@ export default function RegisterPage() {
                       onChange={(e) => handlePasswordChange(e.target.value)}
                       aria-invalid={!!errors.password}
                       aria-describedby={errors.password ? 'password-error' : undefined}
+                      disabled={isSubmitting}
                     />
                     <button
                       type="button"
@@ -342,6 +398,7 @@ export default function RegisterPage() {
                       }}
                       aria-invalid={!!errors.confirmPassword}
                       aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+                      disabled={isSubmitting}
                     />
                     <button
                       type="button"
@@ -420,38 +477,32 @@ export default function RegisterPage() {
                 )}
               </div>
 
+              {/* Success Message */}
+              {registrationSuccess && (
+                <div className={styles.successMessage}>
+                  <h3>Registration Successful!</h3>
+                  <p>Please check your email to verify your account before logging in.</p>
+                  <Link href="/login" className={styles.successLink}>
+                    Go to Login
+                  </Link>
+                </div>
+              )}
+
               {/* Create Account Button */}
-              <button type="submit" className={styles.button}>
-                Create account
-              </button>
-
-              {/* Divider */}
-              <div className={styles.divider}>
-                <div className={styles.dividerLine}></div>
-                <span className={styles.dividerText}>OR</span>
-                <div className={styles.dividerLine}></div>
-              </div>
-
-              {/* Google Sign Up Button */}
               <button
-                type="button"
-                className={styles.googleButton}
-                onClick={handleGoogleSignUp}
+                type="submit"
+                className={styles.button}
+                disabled={isSubmitting || registrationSuccess}
               >
-                <GlobeIcon className={styles.googleIcon} />
-                Sign up with Google
+                {isSubmitting ? 'Creating account...' : 'Create account'}
               </button>
 
               {/* Sign In Link */}
               <div className={styles.signinRow}>
                 <span className={styles.signinText}>Already have an account?</span>
-                <button
-                  type="button"
-                  className={styles.signinLink}
-                  onClick={handleSignIn}
-                >
+                <Link href="/login" className={styles.signinLink}>
                   Sign in
-                </button>
+                </Link>
               </div>
             </form>
           </div>

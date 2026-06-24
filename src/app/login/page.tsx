@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import styles from './login.module.css';
 import BrandTitle from '@/components/BrandTitle';
 import { isValidUsername, isValidPassword } from '@/lib/validation';
-import { signInWithUsername } from '@/lib/amplify/auth-helpers';
+import { signInWithUsername, handleFirstLogin } from '@/lib/amplify/auth-helpers';
 import {
   UserIcon,
   LockIcon,
@@ -72,6 +72,16 @@ export default function LoginPage() {
       const result = await signInWithUsername(username, password);
 
       if (result.isSignedIn) {
+        // Handle first login - create UserProfile and Store if needed
+        console.log('Sign-in successful, handling first login setup...');
+        const setupResult = await handleFirstLogin();
+
+        if (!setupResult.success) {
+          console.warn('First login setup had issues:', setupResult.error);
+          // Don't block login - user can still access dashboard
+          // The setup will retry on next page load if needed
+        }
+
         // Success - redirect to dashboard (middleware handles role routing)
         router.push('/dashboard');
       } else if (result.nextStep.signInStep === 'CONFIRM_SIGN_UP') {
