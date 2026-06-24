@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateServerClientUsingReqRes } from '@aws-amplify/adapter-nextjs/api';
+import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
+import { runWithAmplifyServerContext } from '@/lib/amplify/server';
 import { cookies } from 'next/headers';
-import outputs from '@/amplify_outputs.json';
 
 /**
  * Username Resolution API Endpoint
@@ -36,25 +36,24 @@ export async function POST(request: NextRequest) {
     // Normalize username (lowercase, trim)
     const normalizedUsername = username.toLowerCase().trim();
 
-    // Create server-side GraphQL client
-    const cookieStore = await cookies();
-    const { client } = generateServerClientUsingReqRes<Schema>({
-      config: outputs,
-      cookies: {
-        get: (name: string) => cookieStore.get(name)?.value ?? '',
+    // Query UserProfile by username using server context
+    // Note: This requires a GSI (Global Secondary Index) on username field
+    const result = await runWithAmplifyServerContext({
+      nextServerContext: { cookies },
+      async operation() {
+        const client = generateClient<Schema>();
+        return await client.models.UserProfile.list({
+          filter: {
+            username: {
+              eq: normalizedUsername,
+            },
+          },
+          limit: 1,
+        });
       },
     });
 
-    // Query UserProfile by username
-    // Note: This requires a GSI (Global Secondary Index) on username field
-    const { data: userProfiles, errors } = await client.models.UserProfile.list({
-      filter: {
-        username: {
-          eq: normalizedUsername,
-        },
-      },
-      limit: 1,
-    });
+    const { data: userProfiles, errors } = result;
 
     if (errors || !userProfiles || userProfiles.length === 0) {
       return NextResponse.json(
