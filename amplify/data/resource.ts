@@ -87,5 +87,6 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
+    iamAuthorizationMode: 'required',
   },
 });

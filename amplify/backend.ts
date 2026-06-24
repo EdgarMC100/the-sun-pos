@@ -1,4 +1,5 @@
 import { defineBackend } from '@aws-amplify/backend';
+import { PolicyStatement, Effect, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { postConfirmation } from './functions/post-confirmation/resource';
@@ -16,32 +17,22 @@ const backend = defineBackend({
   adminCreateCashier,
 });
 
-// Add custom claims to ID token via Lambda trigger
-backend.auth.resources.userPool.addPropertyOverride(
-  'LambdaConfig.PreTokenGeneration',
-  backend.preTokenGeneration.resources.lambda.functionArn
+// Triggers configured in auth/resource.ts
+
+// Grant postConfirmation permission to add users to groups
+// Using wildcard resource to avoid circular dependency
+backend.postConfirmation.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['cognito-idp:AdminAddUserToGroup'],
+    resources: ['*'], // Wildcard to avoid circular dependency with UserPool
+  })
 );
-
-backend.auth.resources.userPool.addPropertyOverride(
-  'LambdaConfig.PostConfirmation',
-  backend.postConfirmation.resources.lambda.functionArn
-);
-
-// Grant Lambda functions permission to invoke
-backend.preTokenGeneration.resources.lambda.addPermission('PreTokenGenerationInvoke', {
-  principal: 'cognito-idp.amazonaws.com',
-  sourceArn: backend.auth.resources.userPool.userPoolArn,
-});
-
-backend.postConfirmation.resources.lambda.addPermission('PostConfirmationInvoke', {
-  principal: 'cognito-idp.amazonaws.com',
-  sourceArn: backend.auth.resources.userPool.userPoolArn,
-});
 
 // Grant admin function access to Cognito and Data
 backend.adminCreateCashier.resources.lambda.addToRolePolicy(
-  new (await import('@aws-cdk/aws-iam')).PolicyStatement({
-    effect: (await import('@aws-cdk/aws-iam')).Effect.ALLOW,
+  new PolicyStatement({
+    effect: Effect.ALLOW,
     actions: [
       'cognito-idp:AdminCreateUser',
       'cognito-idp:AdminSetUserPassword',
@@ -53,8 +44,8 @@ backend.adminCreateCashier.resources.lambda.addToRolePolicy(
 );
 
 // Grant access to DynamoDB for all Lambda functions
-const dataPolicy = new (await import('@aws-cdk/aws-iam')).PolicyStatement({
-  effect: (await import('@aws-cdk/aws-iam')).Effect.ALLOW,
+const dataPolicy = new PolicyStatement({
+  effect: Effect.ALLOW,
   actions: [
     'dynamodb:PutItem',
     'dynamodb:GetItem',
@@ -63,11 +54,17 @@ const dataPolicy = new (await import('@aws-cdk/aws-iam')).PolicyStatement({
     'dynamodb:Scan',
   ],
   resources: [
-    backend.data.resources.tables['Store'].tableArn,
     backend.data.resources.tables['UserProfile'].tableArn,
     backend.data.resources.tables['Transaction'].tableArn,
   ],
 });
 
-backend.postConfirmation.resources.lambda.addToRolePolicy(dataPolicy);
+// Note: postConfirmation no longer creates UserProfile to avoid circular dependency
+// UserProfile creation will be handled via API endpoint after registration
 backend.adminCreateCashier.resources.lambda.addToRolePolicy(dataPolicy);
+
+// Pass environment variables to Lambda functions
+backend.adminCreateCashier.addEnvironment(
+  'USER_POOL_ID',
+  backend.auth.resources.userPool.userPoolId
+);

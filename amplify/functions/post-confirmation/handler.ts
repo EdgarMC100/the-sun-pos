@@ -1,12 +1,9 @@
 import type { PostConfirmationTriggerHandler } from 'aws-lambda';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 import {
   CognitoIdentityProviderClient,
   AdminAddUserToGroupCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
-const dynamoDb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const cognito = new CognitoIdentityProviderClient({});
 
 /**
@@ -16,9 +13,9 @@ const cognito = new CognitoIdentityProviderClient({});
  *
  * Responsibilities:
  * 1. Add user to appropriate Cognito group (Admin/Cashier)
- * 2. Create UserProfile record in DynamoDB
- * 3. If admin: Create Store record
- * 4. Link users to their store via storeId
+ *
+ * Note: UserProfile and Store creation are handled separately via API
+ * to avoid circular dependencies between auth and data stacks
  */
 export const handler: PostConfirmationTriggerHandler = async (event) => {
   const {
@@ -51,52 +48,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
       })
     );
     console.log(`User added to ${groupName} group`);
-
-    // 2. If this is an admin, create Store record first
-    if (role === 'admin') {
-      const storeTableName = process.env.STORE_TABLE_NAME;
-      if (!storeTableName) {
-        throw new Error('STORE_TABLE_NAME environment variable not set');
-      }
-
-      await dynamoDb.send(
-        new PutCommand({
-          TableName: storeTableName,
-          Item: {
-            storeId,
-            name: userAttributes['custom:storeName'] || 'My Store',
-            type: userAttributes['custom:storeType'] || 'retail',
-            ownerEmail: email,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        })
-      );
-      console.log('Store created:', storeId);
-    }
-
-    // 3. Create UserProfile record
-    const userProfileTableName = process.env.USER_PROFILE_TABLE_NAME;
-    if (!userProfileTableName) {
-      throw new Error('USER_PROFILE_TABLE_NAME environment variable not set');
-    }
-
-    await dynamoDb.send(
-      new PutCommand({
-        TableName: userProfileTableName,
-        Item: {
-          userId,
-          username,
-          email,
-          role,
-          storeId,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      })
-    );
-    console.log('UserProfile created:', userId);
+    console.log('UserProfile creation will be handled via API endpoint');
 
     return event;
   } catch (error) {
