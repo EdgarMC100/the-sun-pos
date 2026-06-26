@@ -50,6 +50,9 @@ const schema = a.schema({
       allow.ownerDefinedIn('storeId'),
       // Cashiers can read their own profile
       allow.group('Cashier').to(['read']),
+      // Allow guest (unauthenticated) users to read for username resolution
+      // This enables username-to-email lookup before login
+      allow.guest().to(['read']),
     ])
     .identifier(['userId']),
 
