@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
 import BrandTitle from '@/components/BrandTitle';
 import { isValidUsername, isValidPassword } from '@/lib/validation';
@@ -21,6 +21,8 @@ interface FormErrors {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get('verified');
 
   // Form fields (password separate for security per guidelines)
   const [username, setUsername] = useState('');
@@ -132,6 +134,13 @@ export default function LoginPage() {
                 <h2 className={styles.title}>Welcome back</h2>
                 <p className={styles.subtitle}>Please enter your details to sign in.</p>
               </div>
+
+              {/* Success Message for Email Verification */}
+              {verified === 'true' && (
+                <div className={styles.successMessage} role="alert">
+                  ✓ Email verified successfully! You can now sign in.
+                </div>
+              )}
 
               {/* General Error Message */}
               {errors.general && (

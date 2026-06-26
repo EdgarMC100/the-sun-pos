@@ -268,6 +268,27 @@
   }
 }
 
+/* Success Message */
+.successMessage {
+  padding: 12px 16px;
+  background-color: #F0FDF4;
+  border: 1px solid #22C55E;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #16A34A;
+  margin-bottom: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .successMessage {
+    background-color: #14532D;
+    border-color: #166534;
+    color: #86EFAC;
+  }
+}
+
 /* Checkbox Row */
 .checkboxRow {
   display: flex;
