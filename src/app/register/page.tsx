@@ -49,7 +49,6 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
@@ -126,12 +125,12 @@ export default function RegisterPage() {
         storeType: formData.storeType,
       });
 
-      setRegistrationSuccess(true);
+      // Redirect to verify-email page with email parameter
+      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error: any) {
       setErrors({
         email: error.message || 'Registration failed. Please try again.',
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -477,22 +476,11 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Success Message */}
-              {registrationSuccess && (
-                <div className={styles.successMessage}>
-                  <h3>Registration Successful!</h3>
-                  <p>Please check your email to verify your account before logging in.</p>
-                  <Link href="/login" className={styles.successLink}>
-                    Go to Login
-                  </Link>
-                </div>
-              )}
-
               {/* Create Account Button */}
               <button
                 type="submit"
                 className={styles.button}
-                disabled={isSubmitting || registrationSuccess}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creating account...' : 'Create account'}
               </button>
