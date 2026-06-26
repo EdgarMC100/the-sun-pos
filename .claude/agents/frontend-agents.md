@@ -8,9 +8,150 @@
 
 ## Table of Contents
 
-1. [Component Builder Agent](#1-component-builder-agent)
-2. [Styling & Responsive Agent](#2-styling--responsive-agent)
-3. [UI/UX Enhancement Agent](#3-uiux-enhancement-agent)
+1. [React Patterns & Conventions](#react-patterns--conventions)
+2. [Component Builder Agent](#1-component-builder-agent)
+3. [Styling & Responsive Agent](#2-styling--responsive-agent)
+4. [UI/UX Enhancement Agent](#3-uiux-enhancement-agent)
+
+---
+
+# React Patterns & Conventions
+
+**Version:** 1.0.0
+**Applies to:** All frontend development tasks
+
+## State Management Conventions
+
+### Form State Pattern
+
+**✅ CORRECT - Group related form fields:**
+```tsx
+// Group related form data into a single state object
+const [formData, setFormData] = useState({
+  fullName: '',
+  username: '',
+  email: '',
+  storeName: '',
+  storeType: '',
+});
+
+// Update individual fields with spread operator
+const handleChange = (field: string, value: string) => {
+  setFormData(prev => ({ ...prev, [field]: value }));
+};
+
+// Or inline
+onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+```
+
+**❌ AVOID - Individual state for each form field:**
+```tsx
+// DON'T create separate useState for each field
+const [fullName, setFullName] = useState('');
+const [username, setUsername] = useState('');
+const [email, setEmail] = useState('');
+const [storeName, setStoreName] = useState('');
+const [storeType, setStoreType] = useState('');
+```
+
+**Why?**
+- **Cleaner code:** One state object vs. many individual states
+- **Easier validation:** Access all form data in one object
+- **Better for API calls:** Directly pass formData to API functions
+- **Type safety:** Single interface defines entire form shape
+- **Scalability:** Adding fields doesn't clutter component
+
+### State Separation Guidelines
+
+**Group together:**
+- Related form fields (name, email, address, etc.)
+- Coordinated UI state (filters, search params)
+- Related configuration options
+
+**Keep separate:**
+- UI flags: `showPassword`, `isSubmitting`, `isLoading`
+- Passwords: Keep `password` and `confirmPassword` separate for security
+- Derived state: Calculate from existing state instead of storing
+- Error states: `errors` object separate from form data
+- Non-form UI state: modals, tooltips, dropdowns
+
+### Example: Registration Form
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+
+interface FormData {
+  fullName: string;
+  username: string;
+  email: string;
+  storeName: string;
+  storeType: string;
+}
+
+export default function RegisterForm() {
+  // ✅ Grouped form data
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '',
+    username: '',
+    email: '',
+    storeName: '',
+    storeType: '',
+  });
+
+  // ✅ Separate UI state
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      // ✅ Easy to pass to API
+      await registerUser({ ...formData, password });
+    } catch (error) {
+      setErrors({ form: 'Registration failed' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={formData.fullName}
+        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+      />
+      {/* ... other fields */}
+    </form>
+  );
+}
+```
+
+### TypeScript Interface Pattern
+
+Always define an interface for form data:
+
+```tsx
+interface RegistrationFormData {
+  fullName: string;
+  username: string;
+  email: string;
+  storeName: string;
+  storeType: string;
+}
+
+const [formData, setFormData] = useState<RegistrationFormData>({
+  fullName: '',
+  username: '',
+  email: '',
+  storeName: '',
+  storeType: '',
+});
+```
 
 ---
 

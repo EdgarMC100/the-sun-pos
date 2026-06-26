@@ -1,7 +1,22 @@
 # Amplify Gen 2 Integration - Todo List
 
-**Last Updated:** June 19, 2026
-**Phase:** Frontend Integration Complete - Backend Deployment Pending
+**Last Updated:** June 22, 2026 (Evening - Paused)
+**Phase:** Backend Code Complete - Deployment Blocked by Circular Dependency
+
+---
+
+## 🚨 CURRENT BLOCKER (June 22, 2026)
+
+**Issue:** Circular dependency in CloudFormation stacks
+```
+auth → triggers → data → auth (CYCLE!)
+```
+
+**Cause:** `postConfirmation` trigger creates both Store AND UserProfile records, creating dependency between auth and data stacks.
+
+**Solution for Tomorrow:** Remove Store creation from trigger. Admin creates Store via API after registration.
+
+**See:** `docs/SESSION_SUMMARY_2026-06-22.md` for complete details.
 
 ---
 
@@ -78,6 +93,29 @@ npx ampx pipeline-deploy --branch main
 
 ## ⏳ Backend Deployment Tasks (Phase 6)
 
+### 🚨 BLOCKER: IAM Permissions Required (UPDATED)
+
+**Issue:** IAM user `edgarmc` needs additional SSM permissions for Amplify deployment.
+
+**Latest Error:** `User is not authorized to perform: ssm:GetParametersByPath`
+
+**Solution:** Use the **UPDATED** secure IAM policy with SSM permissions.
+
+**Required Actions:**
+1. Update the policy in AWS IAM with the new version from `docs/amplify-gen2-secure-policy.json`
+   - Either edit the existing `AmplifyGen2DeploymentPolicy`
+   - Or delete the old policy and create a new one
+2. New permissions added:
+   - `ssm:GetParametersByPath` (required for reading sandbox configs)
+   - `ssm:DescribeParameters` (required for listing parameters)
+3. Verify and retry: `npx ampx sandbox`
+
+**Security Note:** The policy restricts `iam:PassRole` to only Amplify-related roles and specific AWS services.
+
+**Status:** ⏸️ Waiting for updated IAM policy to be applied
+
+---
+
 ### 1. Deploy Amplify Backend
 **Command:** `npx ampx sandbox`
 
@@ -89,6 +127,7 @@ npx ampx pipeline-deploy --branch main
 - Generates real `amplify_outputs.json` with actual AWS resource IDs
 
 **Verify:**
+- [ ] IAM permissions added (BLOCKER - required first)
 - [ ] `amplify_outputs.json` has real values (not PLACEHOLDER)
 - [ ] AWS Console shows Cognito User Pool created
 - [ ] Lambda functions deployed
