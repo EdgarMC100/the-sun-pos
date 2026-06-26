@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { cookies } from 'next/headers';
 import type { Schema } from '@/amplify/data/resource';
 import { runWithAmplifyServerContext } from '@/lib/amplify/server';
-
-const client = generateClient<Schema>();
+import outputs from '../../../../../amplify_outputs.json';
 
 /**
  * Create UserProfile API Endpoint
@@ -15,6 +15,9 @@ const client = generateClient<Schema>();
  */
 export async function POST(request: NextRequest) {
   try {
+    // Configure Amplify for server-side use
+    Amplify.configure(outputs, { ssr: true });
+
     // Get authenticated user session
     const session = await runWithAmplifyServerContext({
       nextServerContext: { cookies },
@@ -48,14 +51,20 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating UserProfile:', { userId, username, email, role, storeId });
 
-    // Create UserProfile record
-    const result = await client.models.UserProfile.create({
-      userId,
-      username: username || email.split('@')[0],
-      email,
-      role: role as 'admin' | 'cashier',
-      storeId,
-      isActive: true,
+    // Create UserProfile record using server context
+    const result = await runWithAmplifyServerContext({
+      nextServerContext: { cookies },
+      operation: async (contextSpec) => {
+        const client = generateClient(contextSpec);
+        return await client.models.UserProfile.create({
+          userId,
+          username: username || email.split('@')[0],
+          email,
+          role: role as 'admin' | 'cashier',
+          storeId,
+          isActive: true,
+        });
+      },
     });
 
     if (!result.data) {

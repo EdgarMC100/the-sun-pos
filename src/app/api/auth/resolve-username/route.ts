@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
 import { runWithAmplifyServerContext } from '@/lib/amplify/server';
 import { cookies } from 'next/headers';
+import outputs from '../../../../../amplify_outputs.json';
 
 /**
  * Username Resolution API Endpoint
@@ -38,10 +40,15 @@ export async function POST(request: NextRequest) {
 
     // Query UserProfile by username using server context
     // Note: This requires a GSI (Global Secondary Index) on username field
+    // Uses IAM auth mode for unauthenticated access (pre-login)
+
+    // Configure Amplify for server-side use
+    Amplify.configure(outputs, { ssr: true });
+
     const result = await runWithAmplifyServerContext({
       nextServerContext: { cookies },
-      async operation() {
-        const client = generateClient<Schema>();
+      async operation(contextSpec) {
+        const client = generateClient<Schema>(contextSpec, { authMode: 'iam' });
         return await client.models.UserProfile.list({
           filter: {
             username: {

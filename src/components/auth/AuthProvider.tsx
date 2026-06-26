@@ -38,16 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user data
   const loadUser = async () => {
-    try {
-      setLoading(true);
-      const userData = await getCurrentUserData();
-      setUser(userData);
-    } catch (error) {
-      console.error('Error loading user:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const userData = await getCurrentUserData();
+    setUser(userData);
+    setLoading(false);
   };
 
   // Initial load

@@ -1,6 +1,6 @@
 'use client';
 
-import { Amplify, ResourcesConfig } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
 import outputs from '../../../amplify_outputs.json';
 
 /**
@@ -12,48 +12,15 @@ import outputs from '../../../amplify_outputs.json';
  * Usage:
  * - Import this file in client components that use Amplify Auth/Data
  * - Alternatively, configure once in root layout
+ *
+ * IMPORTANT: Pass the entire outputs object to preserve model introspection data
+ * needed for generateClient() to work properly.
  */
 
-// Type-safe configuration from Amplify Gen 2 outputs
-const amplifyConfig: ResourcesConfig = {
-  Auth: {
-    Cognito: {
-      userPoolId: outputs.auth.user_pool_id,
-      userPoolClientId: outputs.auth.user_pool_client_id,
-      identityPoolId: outputs.auth.identity_pool_id,
-      loginWith: {
-        email: true, // Required by Amplify Gen 2
-      },
-      signUpVerificationMethod: 'code',
-      userAttributes: {
-        email: {
-          required: true,
-        },
-        preferred_username: {
-          required: false,
-        },
-      },
-      passwordFormat: {
-        minLength: 8,
-        requireLowercase: true,
-        requireUppercase: true,
-        requireNumbers: true,
-        requireSpecialCharacters: false,
-      },
-    },
-  },
-  API: {
-    GraphQL: {
-      endpoint: outputs.data.url,
-      region: outputs.data.aws_region,
-      defaultAuthMode: 'userPool',
-    },
-  },
-};
-
-// Configure Amplify for client-side use
-Amplify.configure(amplifyConfig, {
+// Configure Amplify for client-side use with full outputs
+// This includes model introspection data for generateClient()
+Amplify.configure(outputs, {
   ssr: true, // Enable SSR support for Next.js
 });
 
-export default amplifyConfig;
+export default outputs;

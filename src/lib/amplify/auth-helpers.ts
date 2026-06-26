@@ -1,6 +1,11 @@
 'use client';
 
-import { signIn, signUp, signOut, confirmSignUp, getCurrentUser, fetchAuthSession, type SignUpInput } from 'aws-amplify/auth';
+import { signIn, signUp, signOut, confirmSignUp, resendSignUpCode, getCurrentUser, fetchAuthSession, type SignUpInput } from 'aws-amplify/auth';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '@/amplify/data/resource';
+
+// Import client config to ensure Amplify is configured
+import '@/lib/amplify/client';
 
 /**
  * Auth Helper Functions
@@ -42,26 +47,40 @@ export interface AdminRegistrationInput {
 /**
  * Resolve username to email for Cognito sign-in
  *
- * Calls the username resolution API endpoint which queries UserProfile table.
+ * Queries UserProfile table directly using Amplify Data client with guest credentials.
+ * This allows username lookup before authentication.
  *
  * @param username - The username to resolve
  * @returns The internal email address for Cognito
  * @throws Error if username not found
  */
 export async function resolveUsername(username: string): Promise<string> {
-  const response = await fetch('/api/auth/resolve-username', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username }),
-  });
+  // Normalize username
+  const normalizedUsername = username.toLowerCase().trim();
 
-  if (!response.ok) {
-    const error = await response.json();
+  try {
+    // Use IAM auth mode with guest credentials from identity pool
+    // Don't pass Schema generic - models are inferred from Amplify config
+    const client = generateClient({ authMode: 'iam' });
+
+    const { data: userProfiles, errors } = await client.models.UserProfile.list({
+      filter: {
+        username: {
+          eq: normalizedUsername,
+        },
+      },
+      limit: 1,
+    });
+
+    if (errors || !userProfiles || userProfiles.length === 0) {
+      throw new Error('Username not found');
+    }
+
+    return userProfiles[0].email;
+  } catch (error: any) {
+    console.error('Username resolution error:', error);
     throw new Error(error.message || 'Failed to resolve username');
   }
-
-  const data = await response.json();
-  return data.email;
 }
 
 // ============================================================================
@@ -169,6 +188,28 @@ export async function confirmEmail(email: string, code: string) {
 }
 
 /**
+ * Resend confirmation code to user's email
+ *
+ * Triggers AWS Cognito to send a new verification code.
+ * Rate limited by AWS (typically 5 requests per minute).
+ *
+ * @param email - User's email address
+ * @returns Code delivery details (masked email)
+ */
+export async function resendConfirmationCode(email: string) {
+  try {
+    const result = await resendSignUpCode({
+      username: email,
+    });
+
+    return result;
+  } catch (error: any) {
+    console.error('Resend confirmation code error:', error);
+    throw new Error(error.message || 'Failed to resend confirmation code');
+  }
+}
+
+/**
  * Sign out current user
  */
 export async function signOutUser() {
@@ -215,7 +256,13 @@ export async function getCurrentUserData(): Promise<UserRole | null> {
       role: (payload.role as 'admin' | 'cashier') || 'cashier',
       storeId: (payload.storeId as string) || '',
     };
-  } catch (error) {
+  } catch (error: any) {
+    // Silently return null for expected "not authenticated" errors
+    if (error.name === 'UserUnAuthenticatedException' || error.message?.includes('not authenticated')) {
+      return null;
+    }
+
+    // Log unexpected errors
     console.error('Error getting user data:', error);
     return null;
   }
