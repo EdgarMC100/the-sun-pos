@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   Global Design Tokens - Light Mode (Default)
+   ============================================================================ */
 :root {
+  /* Legacy variables */
   --background: #ffffff;
   --foreground: #171717;
+
+  /* App-wide color system */
+  --color-bg-app: #F5F6FA;
+  --color-bg-surface: #FFFFFF;
+  --color-text-primary: #212C4D;
+  --color-text-secondary: #5C6585;
+  --color-text-on-sidebar: #FFFFFF;
+  --color-text-on-sidebar-muted: #9AA3C2;
+  --color-border: #E5E8F0;
+
+  /* Brand colors */
+  --color-primary: #F09622;          /* Orange - primary actions */
+  --color-primary-dark: #D67D1A;     /* Darker orange for hover */
+  --color-secondary: #0E76C0;        /* Blue - links, accents */
+  --color-secondary-dark: #0A5A93;   /* Darker blue for hover */
+
+  /* Semantic colors */
+  --color-success: #22C55E;
+  --color-success-bg: #F0FDF4;
+  --color-error: #EF4444;
+  --color-error-bg: #FEE2E2;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
 }
 
 @theme inline {
@@ -12,10 +39,35 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* ============================================================================
+   Global Design Tokens - Dark Mode
+   ============================================================================ */
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Legacy variables */
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* App-wide color system */
+    --color-bg-app: #0F1733;
+    --color-bg-surface: #1A2347;
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #9AA3C2;
+    --color-border: #2A3358;
+
+    /* Brand colors stay the same */
+    --color-primary: #F09622;
+    --color-primary-dark: #D67D1A;
+    --color-secondary: #0E76C0;
+    --color-secondary-dark: #0A5A93;
+
+    /* Semantic colors - adjusted for dark mode */
+    --color-success: #22C55E;
+    --color-success-bg: #14532D;
+    --color-error: #EF4444;
+    --color-error-bg: #7F1D1D;
+    --color-warning: #F59E0B;
+    --color-info: #3B82F6;
   }
 }
 

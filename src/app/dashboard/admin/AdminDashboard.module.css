@@ -1,4 +1,5 @@
 /* Admin Dashboard Styles */
+/* Uses global CSS variables from globals.css */
 
 .container {
   max-width: 1200px;
@@ -15,17 +16,17 @@
 .header h1 {
   margin: 0 0 0.5rem 0;
   font-size: 2rem;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary);
 }
 
 .welcome {
   margin: 0;
   font-size: 1rem;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary);
 }
 
 .welcome strong {
-  color: var(--color-primary, #3b82f6);
+  color: var(--color-primary);
 }
 
 /* Loading State */
@@ -42,8 +43,8 @@
 .spinner {
   width: 3rem;
   height: 3rem;
-  border: 4px solid var(--color-border, #e5e7eb);
-  border-top-color: var(--color-primary, #3b82f6);
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -72,8 +73,8 @@
 /* Card Styles */
 
 .card {
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -86,14 +87,14 @@
 
 .cardHeader {
   padding: 1.25rem 1.5rem;
-  background-color: var(--color-background, #f9fafb);
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  background-color: var(--color-bg-app);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cardHeader h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary);
 }
 
 .cardBody {
@@ -107,7 +108,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid var(--color-border, #f3f4f6);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .infoRow:last-child {
@@ -116,19 +117,19 @@
 
 .label {
   font-weight: 500;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary);
 }
 
 .value {
   font-family: monospace;
   font-size: 0.875rem;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary);
 }
 
 .badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background-color: var(--color-primary, #3b82f6);
+  background-color: var(--color-primary);
   color: white;
   border-radius: 9999px;
   font-size: 0.875rem;
@@ -140,7 +141,7 @@
 
 .description {
   margin: 0 0 1.5rem 0;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
@@ -149,7 +150,7 @@
 .primaryButton {
   display: inline-block;
   padding: 0.75rem 1.5rem;
-  background-color: var(--color-primary, #3b82f6);
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -162,7 +163,7 @@
 }
 
 .primaryButton:hover {
-  background-color: var(--color-primary-dark, #2563eb);
+  background-color: var(--color-primary-dark);
 }
 
 /* Coming Soon Badge */
@@ -170,8 +171,8 @@
 .comingSoon {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background-color: var(--color-background, #f3f4f6);
-  color: var(--color-text-secondary, #6b7280);
+  background-color: var(--color-bg-app);
+  color: var(--color-text-secondary);
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -183,14 +184,14 @@
 .quickActions {
   margin-top: 3rem;
   padding: 2rem;
-  background-color: var(--color-background, #f9fafb);
+  background-color: var(--color-bg-app);
   border-radius: 0.5rem;
 }
 
 .quickActions h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary);
 }
 
 .actionButtons {
@@ -211,8 +212,8 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background-color: var(--color-surface, #ffffff);
-  border: 2px solid var(--color-border, #e5e7eb);
+  background-color: var(--color-bg-surface);
+  border: 2px solid var(--color-border);
   border-radius: 0.5rem;
   text-decoration: none;
   cursor: pointer;
@@ -220,7 +221,7 @@
 }
 
 .actionButton:hover:not(:disabled) {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--color-secondary);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
@@ -238,7 +239,7 @@
 .actionText {
   font-size: 1rem;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary);
 }
 
 /* Responsive Design */

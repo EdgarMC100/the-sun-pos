@@ -11,31 +11,27 @@ import { cookies } from 'next/headers';
  * - Cashiers → /dashboard/cashier
  */
 export default async function DashboardPage() {
-  try {
-    const session = await runWithAmplifyServerContext({
-      nextServerContext: { cookies },
-      operation: (contextSpec) => fetchAuthSession(contextSpec),
-    });
+  const session = await runWithAmplifyServerContext({
+    nextServerContext: { cookies },
+    operation: (contextSpec) => fetchAuthSession(contextSpec),
+  });
 
-    const idToken = session.tokens?.idToken;
+  const idToken = session.tokens?.idToken;
 
-    if (!idToken) {
-      redirect('/login');
-    }
-
-    const role = idToken.payload['custom:role'] as string;
-
-    // Redirect based on role
-    if (role === 'admin') {
-      redirect('/dashboard/admin');
-    } else if (role === 'cashier') {
-      redirect('/dashboard/cashier');
-    } else {
-      // Unknown role - redirect to login
-      redirect('/login');
-    }
-  } catch (error) {
-    console.error('Dashboard redirect error:', error);
+  // No valid session - redirect to login
+  if (!idToken) {
     redirect('/login');
   }
+
+  const role = idToken.payload['custom:role'] as string;
+
+  // Redirect based on role
+  if (role === 'admin') {
+    redirect('/dashboard/admin');
+  } else if (role === 'cashier') {
+    redirect('/dashboard/cashier');
+  }
+
+  // Unknown/invalid role - redirect to login
+  redirect('/login');
 }
