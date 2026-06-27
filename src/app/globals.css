@@ -42,33 +42,31 @@
 /* ============================================================================
    Global Design Tokens - Dark Mode
    ============================================================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Legacy variables */
-    --background: #0a0a0a;
-    --foreground: #ededed;
+[data-theme="dark"] {
+  /* Legacy variables */
+  --background: #0a0a0a;
+  --foreground: #ededed;
 
-    /* App-wide color system */
-    --color-bg-app: #0F1733;
-    --color-bg-surface: #1A2347;
-    --color-text-primary: #FFFFFF;
-    --color-text-secondary: #9AA3C2;
-    --color-border: #2A3358;
+  /* App-wide color system */
+  --color-bg-app: #0F1733;
+  --color-bg-surface: #1A2347;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #9AA3C2;
+  --color-border: #2A3358;
 
-    /* Brand colors stay the same */
-    --color-primary: #F09622;
-    --color-primary-dark: #D67D1A;
-    --color-secondary: #0E76C0;
-    --color-secondary-dark: #0A5A93;
+  /* Brand colors stay the same */
+  --color-primary: #F09622;
+  --color-primary-dark: #D67D1A;
+  --color-secondary: #0E76C0;
+  --color-secondary-dark: #0A5A93;
 
-    /* Semantic colors - adjusted for dark mode */
-    --color-success: #22C55E;
-    --color-success-bg: #14532D;
-    --color-error: #EF4444;
-    --color-error-bg: #7F1D1D;
-    --color-warning: #F59E0B;
-    --color-info: #3B82F6;
-  }
+  /* Semantic colors - adjusted for dark mode */
+  --color-success: #22C55E;
+  --color-success-bg: #14532D;
+  --color-error: #EF4444;
+  --color-error-bg: #7F1D1D;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
 }
 
 body {

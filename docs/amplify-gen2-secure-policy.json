@@ -1,0 +1,76 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AmplifyGen2CoreServices",
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:*",
+        "cognito-idp:*",
+        "cognito-identity:*",
+        "appsync:*",
+        "dynamodb:*",
+        "lambda:*",
+        "s3:*",
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:TagResource",
+        "logs:UntagResource",
+        "ssm:GetParameter",
+        "ssm:GetParametersByPath",
+        "ssm:DescribeParameters",
+        "ssm:PutParameter",
+        "ssm:DeleteParameter",
+        "ssm:AddTagsToResource",
+        "ssm:RemoveTagsFromResource",
+        "amplify:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AmplifyIAMRoleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:PutRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:DetachRolePolicy",
+        "iam:GetRole",
+        "iam:DeleteRole",
+        "iam:DeleteRolePolicy",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:GetRolePolicy",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies"
+      ],
+      "Resource": [
+        "arn:aws:iam::108742334699:role/amplify-*",
+        "arn:aws:iam::108742334699:role/cdk-*"
+      ]
+    },
+    {
+      "Sid": "AmplifyPassRoleRestricted",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::108742334699:role/amplify-*",
+        "arn:aws:iam::108742334699:role/cdk-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": [
+            "lambda.amazonaws.com",
+            "appsync.amazonaws.com",
+            "cognito-idp.amazonaws.com",
+            "cloudformation.amazonaws.com"
+          ]
+        }
+      }
+    }
+  ]
+}

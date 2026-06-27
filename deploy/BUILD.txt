@@ -1,0 +1,72 @@
+2026-06-09T01:21:01.948Z [INFO]: # Build environment configured with Standard build compute type: 8GiB Memory, 4vCPUs, 128GB Disk Space
+2026-06-09T01:21:02.392Z [INFO]: # Cloning repository: git@github.com:EdgarMC100/the-sun-pos.git
+2026-06-09T01:21:02.935Z [INFO]: 
+2026-06-09T01:21:02.935Z [INFO]: Cloning into 'the-sun-pos'...
+2026-06-09T01:21:02.936Z [INFO]: # Switching to commit: d115fe7a427eb7062e9f21ebc0214170c133daa5
+2026-06-09T01:21:02.951Z [INFO]: Note: switching to 'd115fe7a427eb7062e9f21ebc0214170c133daa5'.
+                                 You are in 'detached HEAD' state. You can look around, make experimental
+                                 changes and commit them, and you can discard any commits you make in this
+                                 state without impacting any branches by switching back to a branch.
+                                 If you want to create a new branch to retain commits you create, you may
+                                 do so (now or later) by using -c with the switch command. Example:
+                                 git switch -c <new-branch-name>
+                                 Or undo this operation with:
+                                 git switch -
+                                 Turn off this advice by setting config variable advice.detachedHead to false
+                                 HEAD is now at d115fe7 Add login and register pages with shared components
+2026-06-09T01:21:02.991Z [INFO]: Successfully cleaned up Git credentials
+2026-06-09T01:21:02.992Z [INFO]: # Checking for Git submodules at: /codebuild/output/src4241598618/src/the-sun-pos/.gitmodules
+2026-06-09T01:21:02.998Z [INFO]: # Retrieving environment cache...
+2026-06-09T01:21:03.037Z [WARNING]: ! Unable to write cache: {"code":"ERR_BAD_REQUEST","message":"Request failed with status code 404"})}
+2026-06-09T01:21:03.037Z [INFO]: ---- Setting Up SSM Secrets ----
+2026-06-09T01:21:03.037Z [INFO]: SSM params {"Path":"/amplify/d17vu98ms62h5j/main/","WithDecryption":true}
+2026-06-09T01:21:03.091Z [WARNING]: !Failed to set up process.env.secrets
+2026-06-09T01:21:03.816Z [INFO]: # No package override configuration found.
+2026-06-09T01:21:03.820Z [INFO]: # Retrieving cache...
+2026-06-09T01:21:24.202Z [INFO]: # Extracting cache...
+2026-06-09T01:21:45.258Z [INFO]: # Extraction completed
+2026-06-09T01:21:45.499Z [INFO]: # Retrieved cache
+2026-06-09T01:21:48.983Z [INFO]: ## Starting Backend Build
+                                 ## Checking for associated backend environment...
+                                 ## No backend environment association found, continuing...
+                                 ## Completed Backend Build
+2026-06-09T01:21:48.988Z [INFO]: {"backendDuration": 0}
+                                 ## Starting Frontend Build
+                                 # Starting phase: preBuild
+                                 # Executing command: npm install -g pnpm
+2026-06-09T01:22:04.464Z [INFO]: added 1 package in 12s
+2026-06-09T01:22:04.470Z [INFO]: 1 package is looking for funding
+                                 run `npm fund` for details
+2026-06-09T01:22:04.476Z [INFO]: # Executing command: pnpm install
+2026-06-09T01:22:05.368Z [INFO]: Recreating /codebuild/output/src4241598618/src/the-sun-pos/node_modules
+2026-06-09T01:22:07.767Z [INFO]: ? Verifying lockfile against supply-chain policies (425 entries)...
+2026-06-09T01:22:10.404Z [INFO]: ✓ Lockfile passes supply-chain policies (425 entries in 2.6s)
+2026-06-09T01:22:10.406Z [INFO]: Lockfile is up to date, resolution step is skipped
+2026-06-09T01:22:10.440Z [INFO]: Progress: resolved 1, reused 0, downloaded 0, added 0
+2026-06-09T01:22:10.473Z [INFO]: Packages: +358
+                                 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-06-09T01:22:11.443Z [INFO]: Progress: resolved 358, reused 0, downloaded 129, added 65
+2026-06-09T01:22:12.445Z [INFO]: Progress: resolved 358, reused 0, downloaded 296, added 205
+2026-06-09T01:22:12.775Z [INFO]: Progress: resolved 358, reused 0, downloaded 358, added 358, done
+2026-06-09T01:22:12.936Z [INFO]: dependencies:
+                                 + next 16.2.5
+                                 + react 19.2.4
+                                 + react-dom 19.2.4
+                                 + react-fast-marquee 1.6.5
+                                 devDependencies:
+                                 + @tailwindcss/postcss 4.2.4
+                                 + @types/node 20.19.39
+                                 + @types/react 19.2.14
+                                 + @types/react-dom 19.2.3
+                                 + eslint 9.39.4
+                                 + eslint-config-next 16.2.5
+                                 + tailwindcss 4.2.4
+                                 + typescript 5.9.3
+2026-06-09T01:22:12.980Z [INFO]: [ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: sharp@0.34.5, unrs-resolver@1.11.1
+                                 Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+2026-06-09T01:22:13.081Z [ERROR]: !!! Build failed
+2026-06-09T01:22:13.082Z [INFO]: Please read more about Amplify Hosting's support for SSR frameworks to find if your build failure is related to an unsupported feature: https://docs.aws.amazon.com/amplify/latest/userguide/amplify-ssr-framework-support.html. You may also find this troubleshooting guide useful: https://docs.aws.amazon.com/amplify/latest/userguide/troubleshooting-ssr-deployment.html
+2026-06-09T01:22:13.082Z [ERROR]: !!! Error: Command failed with exit code 1
+2026-06-09T01:22:13.082Z [INFO]: # Starting environment caching...
+2026-06-09T01:22:13.082Z [INFO]: # Environment caching completed
+
