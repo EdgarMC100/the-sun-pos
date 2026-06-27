@@ -59,24 +59,22 @@ export async function resolveUsername(username: string): Promise<string> {
   const normalizedUsername = username.toLowerCase().trim();
 
   try {
-    // Use IAM auth mode with guest credentials from identity pool
-    // Don't pass Schema generic - models are inferred from Amplify config
-    const client = generateClient({ authMode: 'iam' });
-
-    const { data: userProfiles, errors } = await client.models.UserProfile.list({
-      filter: {
-        username: {
-          eq: normalizedUsername,
-        },
+    // Call server-side API endpoint that queries UserProfile and falls back to Cognito
+    const response = await fetch('/api/auth/resolve-username', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      limit: 1,
+      body: JSON.stringify({ username: normalizedUsername }),
     });
 
-    if (errors || !userProfiles || userProfiles.length === 0) {
-      throw new Error('Username not found');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Username not found');
     }
 
-    return userProfiles[0].email;
+    const data = await response.json();
+    return data.email;
   } catch (error: any) {
     console.error('Username resolution error:', error);
     throw new Error(error.message || 'Failed to resolve username');

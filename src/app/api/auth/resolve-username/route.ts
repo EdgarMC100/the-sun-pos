@@ -4,6 +4,7 @@ import { generateClient } from 'aws-amplify/data';
 import { type Schema } from '@/amplify/data/resource';
 import { runWithAmplifyServerContext } from '@/lib/amplify/server';
 import { cookies } from 'next/headers';
+import { CognitoIdentityProviderClient, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider';
 import outputs from '../../../../../amplify_outputs.json';
 
 /**
@@ -62,19 +63,55 @@ export async function POST(request: NextRequest) {
 
     const { data: userProfiles, errors } = result;
 
-    if (errors || !userProfiles || userProfiles.length === 0) {
-      return NextResponse.json(
-        { message: 'Username not found' },
-        { status: 404 }
-      );
+    // If UserProfile exists, return email from there
+    if (!errors && userProfiles && userProfiles.length > 0) {
+      return NextResponse.json({
+        email: userProfiles[0].email,
+      });
     }
 
-    const userProfile = userProfiles[0];
+    // Fallback: Query Cognito for first-time users (UserProfile created after first login)
+    // This allows users to login with username even before UserProfile exists
+    console.log('UserProfile not found, querying Cognito as fallback...');
 
-    // Return internal email for Cognito
-    return NextResponse.json({
-      email: userProfile.email,
-    });
+    try {
+      const cognito = new CognitoIdentityProviderClient({ region: outputs.auth.aws_region });
+      const listUsersResult = await cognito.send(
+        new ListUsersCommand({
+          UserPoolId: outputs.auth.user_pool_id,
+          Filter: `preferred_username = "${normalizedUsername}"`,
+          Limit: 1,
+        })
+      );
+
+      if (!listUsersResult.Users || listUsersResult.Users.length === 0) {
+        return NextResponse.json(
+          { message: 'Username not found. Please check your username or use your email address.' },
+          { status: 404 }
+        );
+      }
+
+      const user = listUsersResult.Users[0];
+      const emailAttribute = user.Attributes?.find(attr => attr.Name === 'email');
+
+      if (!emailAttribute || !emailAttribute.Value) {
+        return NextResponse.json(
+          { message: 'Email not found for user' },
+          { status: 404 }
+        );
+      }
+
+      console.log('Username resolved from Cognito successfully');
+      return NextResponse.json({
+        email: emailAttribute.Value,
+      });
+    } catch (cognitoError: any) {
+      console.error('Cognito query error:', cognitoError);
+      return NextResponse.json(
+        { message: 'Failed to resolve username. Please try using your email address.' },
+        { status: 500 }
+      );
+    }
   } catch (error: any) {
     console.error('Username resolution error:', error);
     return NextResponse.json(
