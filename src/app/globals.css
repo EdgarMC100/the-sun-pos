@@ -42,7 +42,7 @@
 /* ============================================================================
    Global Design Tokens - Dark Mode
    ============================================================================ */
-[data-theme="dark"] {
+.dark {
   /* Legacy variables */
   --background: #0a0a0a;
   --foreground: #ededed;
