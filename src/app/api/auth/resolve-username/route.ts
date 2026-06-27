@@ -1,9 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Amplify } from 'aws-amplify';
-import { generateClient } from 'aws-amplify/data';
-import { type Schema } from '@/amplify/data/resource';
-import { runWithAmplifyServerContext } from '@/lib/amplify/server';
-import { cookies } from 'next/headers';
 import { CognitoIdentityProviderClient, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider';
 import outputs from '../../../../../amplify_outputs.json';
 
@@ -39,40 +34,10 @@ export async function POST(request: NextRequest) {
     // Normalize username (lowercase, trim)
     const normalizedUsername = username.toLowerCase().trim();
 
-    // Query UserProfile by username using server context
-    // Note: This requires a GSI (Global Secondary Index) on username field
-    // Uses IAM auth mode for unauthenticated access (pre-login)
-
-    // Configure Amplify for server-side use
-    Amplify.configure(outputs, { ssr: true });
-
-    const result = await runWithAmplifyServerContext({
-      nextServerContext: { cookies },
-      async operation(contextSpec) {
-        const client = generateClient<Schema>(contextSpec, { authMode: 'iam' });
-        return await client.models.UserProfile.list({
-          filter: {
-            username: {
-              eq: normalizedUsername,
-            },
-          },
-          limit: 1,
-        });
-      },
-    });
-
-    const { data: userProfiles, errors } = result;
-
-    // If UserProfile exists, return email from there
-    if (!errors && userProfiles && userProfiles.length > 0) {
-      return NextResponse.json({
-        email: userProfiles[0].email,
-      });
-    }
-
-    // Fallback: Query Cognito for first-time users (UserProfile created after first login)
-    // This allows users to login with username even before UserProfile exists
-    console.log('UserProfile not found, querying Cognito as fallback...');
+    // Query Cognito directly for username resolution
+    // Cognito is the source of truth for user credentials (pre-authentication)
+    // UserProfile table is for application data AFTER login
+    console.log('Resolving username via Cognito...');
 
     try {
       const cognito = new CognitoIdentityProviderClient({ region: outputs.auth.aws_region });
