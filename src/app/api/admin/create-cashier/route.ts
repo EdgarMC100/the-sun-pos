@@ -3,8 +3,9 @@ import { runWithAmplifyServerContext } from '@/lib/amplify/server';
 import { fetchAuthSession } from 'aws-amplify/auth/server';
 import { cookies } from 'next/headers';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import amplifyOutputs from '~/amplify_outputs.json';
 
-const lambda = new LambdaClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const lambda = new LambdaClient({ region: amplifyOutputs.auth?.aws_region || 'us-east-1' });
 
 /**
  * POST /api/admin/create-cashier
@@ -82,10 +83,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. Invoke Lambda function with admin's storeId
-    const lambdaFunctionName = process.env.ADMIN_CREATE_CASHIER_FUNCTION_NAME;
+    const lambdaFunctionName = amplifyOutputs.custom?.adminCreateCashierFunctionName;
 
     if (!lambdaFunctionName) {
-      console.error('ADMIN_CREATE_CASHIER_FUNCTION_NAME environment variable not set');
+      console.error('Lambda function name not found in amplify_outputs.json');
       return NextResponse.json(
         { success: false, message: 'Server configuration error', error: 'CONFIG_ERROR' },
         { status: 500 }
