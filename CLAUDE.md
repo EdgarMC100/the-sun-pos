@@ -46,6 +46,7 @@ Note: Agent files are automatically loaded by Claude Code based on the task cont
 ### Development Tools
 - **Linting:** ESLint 9.x with eslint-config-next
 - **Type Checking:** TypeScript strict mode
+- **Testing:** Vitest 4.x with React Testing Library
 
 ---
 
@@ -95,6 +96,18 @@ pnpm start
 
 # Run linter
 pnpm lint
+
+# Run tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with coverage
+pnpm test:coverage
+
+# Run tests with UI
+pnpm test:ui
 ```
 
 ### Git Workflow
@@ -274,6 +287,8 @@ The automatic scoping eliminates namespace collisions, so you can use simple, se
 - ✅ Check Next.js 16 documentation in `node_modules/next/dist/docs/` for breaking changes
 - ✅ Use TypeScript for all new files
 - ✅ Run `pnpm lint` before committing
+- ✅ Run `pnpm test` before committing
+- ✅ Write tests for new features and bug fixes
 - ✅ Test responsive design (mobile, tablet, desktop)
 - ✅ Optimize images and assets for web
 - ✅ Follow accessibility best practices
@@ -282,6 +297,168 @@ The automatic scoping eliminates namespace collisions, so you can use simple, se
 - ✅ Define CSS variables in `globals.css` for design tokens
 - ✅ Use camelCase for CSS Module class names
 - ✅ Co-locate CSS Module files with their components
+
+---
+
+## 🧪 Testing Guidelines
+
+### Testing Stack
+- **Test Runner:** Vitest 4.x
+- **Testing Library:** React Testing Library
+- **DOM Matchers:** @testing-library/jest-dom
+- **User Interactions:** @testing-library/user-event
+- **Environment:** jsdom
+
+### Test File Organization
+```
+src/
+├── components/
+│   ├── BrandTitle.tsx
+│   ├── BrandTitle.test.tsx        # Component tests
+│   └── BrandTitle.module.css
+├── lib/
+│   ├── validation.ts
+│   └── validation.test.ts          # Utility tests
+└── test/
+    ├── setup.ts                     # Global test setup
+    └── test-utils.tsx               # Custom render helpers
+```
+
+### Writing Tests
+
+#### Component Tests
+```tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
+import MyComponent from './MyComponent';
+
+// Mock external dependencies
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+describe('MyComponent', () => {
+  it('renders correctly', () => {
+    render(<MyComponent />);
+    expect(screen.getByText('Hello')).toBeInTheDocument();
+  });
+
+  it('handles user interaction', async () => {
+    const user = userEvent.setup();
+    render(<MyComponent />);
+
+    await user.click(screen.getByRole('button'));
+    expect(screen.getByText('Clicked')).toBeInTheDocument();
+  });
+});
+```
+
+#### Utility Function Tests
+```tsx
+import { describe, it, expect } from 'vitest';
+import { isValidEmail } from './validation';
+
+describe('isValidEmail', () => {
+  it('validates correct emails', () => {
+    expect(isValidEmail('user@example.com')).toBe(true);
+  });
+
+  it('rejects invalid emails', () => {
+    expect(isValidEmail('invalid')).toBe(false);
+  });
+});
+```
+
+### Testing Best Practices
+
+#### DO
+- ✅ Write tests for new features and bug fixes
+- ✅ Test user behavior, not implementation details
+- ✅ Use meaningful test descriptions
+- ✅ Mock external dependencies (APIs, auth, navigation)
+- ✅ Test error states and edge cases
+- ✅ Use `screen.getByRole()` for better accessibility
+- ✅ Clean up after tests (automatic with setup)
+- ✅ Group related tests with `describe` blocks
+
+#### DON'T
+- ❌ Test CSS styles or implementation details
+- ❌ Write tests that depend on other tests
+- ❌ Mock everything - test real behavior when possible
+- ❌ Use `getByTestId` unless necessary (prefer semantic queries)
+- ❌ Skip testing error cases
+
+### Common Testing Patterns
+
+#### Mocking Next.js Router
+```tsx
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+```
+
+#### Mocking Auth Functions
+```tsx
+const mockSignIn = vi.fn();
+vi.mock('@/lib/amplify/auth-helpers', () => ({
+  signInUser: () => mockSignIn(),
+}));
+```
+
+#### Testing Async Operations
+```tsx
+it('handles async operation', async () => {
+  mockFetchUser.mockResolvedValueOnce({ name: 'John' });
+  render(<UserProfile />);
+
+  await waitFor(() => {
+    expect(screen.getByText('John')).toBeInTheDocument();
+  });
+});
+```
+
+#### Testing User Events
+```tsx
+it('handles form submission', async () => {
+  const user = userEvent.setup();
+  render(<LoginForm />);
+
+  await user.type(screen.getByLabelText(/username/i), 'testuser');
+  await user.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(mockSubmit).toHaveBeenCalledWith({ username: 'testuser' });
+});
+```
+
+### Running Tests
+
+```bash
+# Run all tests once
+pnpm test
+
+# Run tests in watch mode (re-runs on file changes)
+pnpm test:watch
+
+# Run tests with coverage report
+pnpm test:coverage
+
+# Run tests with UI interface
+pnpm test:ui
+```
+
+### Coverage Requirements
+- **Target:** 70%+ coverage for critical paths
+- **Focus:** Business logic, auth flows, data validation
+- **Lower priority:** UI components, simple presentational components
+
+### Test Naming Conventions
+- Test files: `ComponentName.test.tsx` or `utilityName.test.ts`
+- Describe blocks: Component/function name
+- Test cases: Start with "it" and describe behavior
+  - Good: `it('validates email format correctly')`
+  - Bad: `it('works')`
 
 ---
 
@@ -331,6 +508,8 @@ When adding a new feature, follow this process:
 
 3. **Quality Assurance**
    - Run `pnpm lint` - fix all issues
+   - Run `pnpm test` - ensure all tests pass
+   - Write tests for new functionality
    - Test on different screen sizes
    - Verify accessibility
    - Check browser console for errors
@@ -345,6 +524,8 @@ When adding a new feature, follow this process:
 ### Code Review Checklist
 - [ ] TypeScript types are properly defined
 - [ ] No ESLint errors or warnings
+- [ ] Tests written for new features and passing (`pnpm test`)
+- [ ] Test coverage adequate for critical paths
 - [ ] Responsive on mobile, tablet, desktop
 - [ ] Follows existing code patterns
 - [ ] Server/Client components used appropriately
