@@ -75,14 +75,16 @@ export const handler: Handler<CreateCashierRequest, CreateCashierResponse> = asy
     });
 
     // 5. Create Cognito user with internal email
+    // IMPORTANT: Since the User Pool is configured with loginWith.email=true,
+    // the Username MUST be an email address (the internal email we generated)
     await cognito.send(
       new AdminCreateUserCommand({
         UserPoolId: userPoolId,
-        Username: username,
+        Username: internalEmail, // Use email as username (Cognito requirement)
         UserAttributes: [
           { Name: 'email', Value: internalEmail },
           { Name: 'email_verified', Value: 'true' }, // Skip email verification
-          { Name: 'preferred_username', Value: username },
+          { Name: 'preferred_username', Value: username }, // Display name
           { Name: 'custom:role', Value: 'cashier' },
           { Name: 'custom:storeId', Value: adminStoreId },
         ],
@@ -97,7 +99,7 @@ export const handler: Handler<CreateCashierRequest, CreateCashierResponse> = asy
     await cognito.send(
       new AdminSetUserPasswordCommand({
         UserPoolId: userPoolId,
-        Username: username,
+        Username: internalEmail, // Must match the Username used in AdminCreateUserCommand
         Password: password,
         Permanent: true, // No password change required on first login
       })
@@ -109,7 +111,7 @@ export const handler: Handler<CreateCashierRequest, CreateCashierResponse> = asy
     await cognito.send(
       new AdminAddUserToGroupCommand({
         UserPoolId: userPoolId,
-        Username: username,
+        Username: internalEmail, // Must match the Username used in AdminCreateUserCommand
         GroupName: 'Cashier',
       })
     );
@@ -120,7 +122,7 @@ export const handler: Handler<CreateCashierRequest, CreateCashierResponse> = asy
     await cognito.send(
       new AdminUpdateUserAttributesCommand({
         UserPoolId: userPoolId,
-        Username: username,
+        Username: internalEmail, // Must match the Username used in AdminCreateUserCommand
         UserAttributes: [{ Name: 'email_verified', Value: 'true' }],
       })
     );

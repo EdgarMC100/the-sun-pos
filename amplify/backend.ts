@@ -68,3 +68,10 @@ backend.adminCreateCashier.addEnvironment(
   'USER_POOL_ID',
   backend.auth.resources.userPool.userPoolId
 );
+
+// Export Lambda function name for Next.js API routes
+backend.addOutput({
+  custom: {
+    adminCreateCashierFunctionName: backend.adminCreateCashier.resources.lambda.functionName,
+  },
+});
